@@ -9,6 +9,12 @@
 /[Bb]uilds/
 /[Ll]ogs/
 /[Mm]emoryCaptures/
+/[Uu]nity?Caches/
+/[Uu]nity?PackageCache/
+/[Uu]nity?Assemblies/
+/[Uu]nity?Generated/
+/[Uu]nity?PackageManager/
+/[Uu]nity?CollabProxy/
 
 # Asset meta data should only be ignored when the corresponding asset is also ignored
 !/[Aa]ssets/**/*.meta
