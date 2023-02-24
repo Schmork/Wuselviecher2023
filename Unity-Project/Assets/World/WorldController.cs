@@ -15,8 +15,11 @@ public class WorldController : MonoBehaviour
     [SerializeField] GameObject FoodPrefab;
     [SerializeField] Vector2 FoodSpawnTimes;
 
+    public static System.Collections.Generic.List<long> spans;
+
     void Start()
     {
+        spans = new System.Collections.Generic.List<long>() { 100 };
         Valhalla.RefreshDashboard();
         InvokeRepeating(nameof(Spawn), CellSpawnTimes.x, CellSpawnTimes.y);
         //InvokeRepeating(nameof(Food), FoodSpawnTimes.x, FoodSpawnTimes.y);
@@ -30,6 +33,8 @@ public class WorldController : MonoBehaviour
 
     void Spawn()
     {
+        Debug.Log(spans.Average());
+
         int n = 0;
         var existingCells = FindObjectsOfType<MovementController>();
         while (n++ < 7 && existingCells.Sum(cell => cell.GetComponent<SizeController>().Size) < WorldMinMass)
