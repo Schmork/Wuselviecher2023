@@ -32,9 +32,10 @@ public class MovementController : MonoBehaviour
 
     void Update()
     {
+        if (Brain == null) Debug.Break();
+
         if (rb.velocity.magnitude > stats.FastestSpeedAchieved) stats.FastestSpeedAchieved = rb.velocity.magnitude;
         stats.DistanceTravelled += rb.velocity.magnitude / sc.Size * Time.deltaTime;
-
 
         var inputList = new List<float> { sc.Size / 500f, rb.velocity.magnitude / 10f, rb.angularVelocity / 50f };
 
@@ -42,13 +43,25 @@ public class MovementController : MonoBehaviour
         {
             var layer = Brain.memNeuronLayer[i];
             var neuron = Brain.memNeuronIndex[i];
-            inputList.Add(Brain.Layers[layer].PrevOutput[neuron]);
+            inputList.Add(Brain.layers[layer].neurons[neuron].value);
         }
 
         inputList.AddRange(sensors.Scan());
         
         stopwatch.Start();
-        var actions = Brain.FeedForward(inputList.ToArray());
+
+        for (int i = 0; i < inputList.Count; i++)
+        {
+            Brain.UpdateInput(i, inputList[i]);
+        }
+
+        bool isUpdateCompleted = false;
+        while (!isUpdateCompleted)
+        {
+            isUpdateCompleted = Brain.Evaluate();
+        }
+
+        var actions = Brain.GetOutput();
         WorldController.spans.Add(stopwatch.ElapsedTicks);
         stopwatch.Reset();
 

@@ -12,9 +12,6 @@ public class WorldController : MonoBehaviour
     [SerializeField] Vector2 CellSpawnTimes;
     [SerializeField] float CellSpawnRadius;
 
-    [SerializeField] GameObject FoodPrefab;
-    [SerializeField] Vector2 FoodSpawnTimes;
-
     public static System.Collections.Generic.List<long> spans;
 
     void Start()
@@ -22,7 +19,6 @@ public class WorldController : MonoBehaviour
         spans = new System.Collections.Generic.List<long>() { 100 };
         Valhalla.RefreshDashboard();
         InvokeRepeating(nameof(Spawn), CellSpawnTimes.x, CellSpawnTimes.y);
-        //InvokeRepeating(nameof(Food), FoodSpawnTimes.x, FoodSpawnTimes.y);
         InvokeRepeating(nameof(DecayScores), DecayScoreTimes.x, DecayScoreTimes.y);
     }
 
@@ -33,6 +29,7 @@ public class WorldController : MonoBehaviour
 
     void Spawn()
     {
+        return;
         Debug.Log(spans.Average());
 
         int n = 0;
@@ -62,28 +59,13 @@ public class WorldController : MonoBehaviour
 
             var mc = cell.GetComponent<MovementController>();
             var hero = Valhalla.GetRandomHero();
+            /*
             if (Random.value < 0.95 && hero != null)
                 mc.SetBrain(new NeuralNetwork(hero, ValhallaMutation));
+            */
+            Debug.Break();
             if (mc.Brain == null)
                 mc.SetBrain(new NeuralNetwork());
-        }
-    }
-
-    void Food()
-    {
-        for (int i = 0; i < 20; i++)
-        {
-            var pos = transform.position + (Vector3)Random.insideUnitCircle * CellSpawnRadius * 4f;
-            var food = Instantiate(FoodPrefab, pos, Quaternion.identity, transform);
-            food.GetComponent<SpriteRenderer>().material.color =
-                Random.ColorHSV(
-                0, 1,
-                0.6f, 1,
-                0.6f, 1,
-                1, 1);
-            food.GetComponent<SizeController>().Size = Random.Range(
-                WorldConfig.Instance.FoodSizeMin,
-                WorldConfig.Instance.FoodSizeMax);
         }
     }
 }
