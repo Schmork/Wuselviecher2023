@@ -40,7 +40,7 @@ public class SizeController : MonoBehaviour
     private void Die()
     {
         var stats = GetComponent<StatsCollector>();
-        if (stats != null) stats.AddToValhalla(GetComponent<MovementController>().Brain);
+        //if (stats != null) stats.AddToValhalla(GetComponent<CellController>().Brain);
         Destroy(gameObject);
     }
 }

@@ -115,8 +115,10 @@ namespace SharpNeat.Decoders
         /// </summary>
         public static NetworkActivationScheme CreateAcyclicScheme()
         {
-            NetworkActivationScheme scheme = new NetworkActivationScheme();
-            scheme._acyclicNetwork = true;
+            NetworkActivationScheme scheme = new NetworkActivationScheme
+            {
+                _acyclicNetwork = true
+            };
             return scheme;
         }
 
@@ -125,11 +127,13 @@ namespace SharpNeat.Decoders
         /// </summary>
         public static NetworkActivationScheme CreateCyclicFixedTimestepsScheme(int timestepsPerActivation)
         {
-            NetworkActivationScheme scheme = new NetworkActivationScheme();
-            scheme._acyclicNetwork = false;
-            scheme._timestepsPerActivation = timestepsPerActivation;
-            scheme._relaxingActivation = false;
-            scheme._fastFlag = true;
+            NetworkActivationScheme scheme = new NetworkActivationScheme
+            {
+                _acyclicNetwork = false,
+                _timestepsPerActivation = timestepsPerActivation,
+                _relaxingActivation = false,
+                _fastFlag = true
+            };
             return scheme;
         }
 
@@ -139,11 +143,13 @@ namespace SharpNeat.Decoders
         /// </summary>
         public static NetworkActivationScheme CreateCyclicFixedTimestepsScheme(int timestepsPerActivation, bool fastFlag)
         {
-            NetworkActivationScheme scheme = new NetworkActivationScheme();
-            scheme._acyclicNetwork = false;
-            scheme._timestepsPerActivation = timestepsPerActivation;
-            scheme._relaxingActivation = false;
-            scheme._fastFlag = fastFlag;
+            NetworkActivationScheme scheme = new NetworkActivationScheme
+            {
+                _acyclicNetwork = false,
+                _timestepsPerActivation = timestepsPerActivation,
+                _relaxingActivation = false,
+                _fastFlag = fastFlag
+            };
             return scheme;
         }
 
@@ -152,12 +158,14 @@ namespace SharpNeat.Decoders
         /// </summary>
         public static NetworkActivationScheme CreateCyclicRelaxingActivationScheme(double signalDeltaThreshold, int maxTimesteps)
         {
-            NetworkActivationScheme scheme = new NetworkActivationScheme();
-            scheme._acyclicNetwork = false;
-            scheme._signalDeltaThreshold = signalDeltaThreshold;
-            scheme._maxTimesteps = maxTimesteps;
-            scheme._relaxingActivation = true;
-            scheme._fastFlag = true;
+            NetworkActivationScheme scheme = new NetworkActivationScheme
+            {
+                _acyclicNetwork = false,
+                _signalDeltaThreshold = signalDeltaThreshold,
+                _maxTimesteps = maxTimesteps,
+                _relaxingActivation = true,
+                _fastFlag = true
+            };
             return scheme;
         }
 
@@ -167,12 +175,14 @@ namespace SharpNeat.Decoders
         /// </summary>
         public static NetworkActivationScheme CreateCyclicRelaxingActivationScheme(double signalDeltaThreshold, int maxTimesteps, bool fastFlag)
         {
-            NetworkActivationScheme scheme = new NetworkActivationScheme();
-            scheme._acyclicNetwork = false;
-            scheme._signalDeltaThreshold = signalDeltaThreshold;
-            scheme._maxTimesteps = maxTimesteps;
-            scheme._relaxingActivation = true;
-            scheme._fastFlag = fastFlag;
+            NetworkActivationScheme scheme = new NetworkActivationScheme
+            {
+                _acyclicNetwork = false,
+                _signalDeltaThreshold = signalDeltaThreshold,
+                _maxTimesteps = maxTimesteps,
+                _relaxingActivation = true,
+                _fastFlag = fastFlag
+            };
             return scheme;
         }
 

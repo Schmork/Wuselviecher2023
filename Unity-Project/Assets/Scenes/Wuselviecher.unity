@@ -2957,7 +2957,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &413936422
 Transform:
   m_ObjectHideFlags: 0
@@ -3844,7 +3844,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &805032709
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5566,7 +5566,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1169234085
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5583,11 +5583,11 @@ MonoBehaviour:
   _networkInputCount: 5
   _networkOutputCount: 2
   Trials: 1
-  TrialDuration: 20
-  StoppingFitness: 15
+  TrialDuration: 1
+  StoppingFitness: 0
   _unitControllerPrefab: {fileID: -6811338495524346480, guid: 1e92a15f946344b47b31278ad92ac86a, type: 3}
   _spawnParent: {fileID: 1736204725}
-  _enableDebugLogging: 0
+  _enableDebugLogging: 1
 --- !u!4 &1169234086
 Transform:
   m_ObjectHideFlags: 0

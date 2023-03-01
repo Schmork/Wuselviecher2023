@@ -217,18 +217,15 @@ namespace SharpNeat.Genomes.Neat
                 // Note. we don't reference the ComplexityRegulationMode enum directly so as not to introduce a
                 // compile time dependency between this class and the NeatEvolutionaryAlgorithm - we
                 // may wish to use NeatGenome with other algorithm classes in the future.
-                _searchMode = value; 
-                switch(value)
+                _searchMode = value;
+                _neatGenomeParamsCurrent = value switch
                 {
-                    case 0: // ComplexityRegulationMode.Complexifying
-                        _neatGenomeParamsCurrent = _neatGenomeParamsComplexifying;
-                        break;
-                    case 1: // ComplexityRegulationMode.Simplifying
-                        _neatGenomeParamsCurrent = _neatGenomeParamsSimplifying;
-                        break;
-                    default:
-                        throw new SharpNeatException("Unexpected SearchMode");
-                }
+                    // ComplexityRegulationMode.Complexifying
+                    0 => _neatGenomeParamsComplexifying,
+                    // ComplexityRegulationMode.Simplifying
+                    1 => _neatGenomeParamsSimplifying,
+                    _ => throw new SharpNeatException("Unexpected SearchMode"),
+                };
             }
         }
 

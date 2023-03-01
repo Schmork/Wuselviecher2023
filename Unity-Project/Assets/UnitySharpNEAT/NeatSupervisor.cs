@@ -67,11 +67,11 @@ namespace UnitySharpNEAT
 
 
         // Object pooling and Unit management
-        private Dictionary<IBlackBox, UnitController> _blackBoxMap = new Dictionary<IBlackBox, UnitController>();
+        private readonly Dictionary<IBlackBox, UnitController> _blackBoxMap = new Dictionary<IBlackBox, UnitController>();
 
-        private HashSet<UnitController> _unusedUnitsPool = new HashSet<UnitController>();
+        private readonly HashSet<UnitController> _unusedUnitsPool = new HashSet<UnitController>();
 
-        private HashSet<UnitController> _usedUnitsPool = new HashSet<UnitController>();
+        private readonly HashSet<UnitController> _usedUnitsPool = new HashSet<UnitController>();
 
         private DateTime _startTime;
         #endregion

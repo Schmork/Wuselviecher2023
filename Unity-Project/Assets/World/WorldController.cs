@@ -1,3 +1,5 @@
+using SharpNeat.Decoders.Neat;
+using SharpNeat.Genomes.Neat;
 using System.Linq;
 using UnityEngine;
 
@@ -12,9 +14,6 @@ public class WorldController : MonoBehaviour
     [SerializeField] Vector2 CellSpawnTimes;
     [SerializeField] float CellSpawnRadius;
 
-    [SerializeField] GameObject FoodPrefab;
-    [SerializeField] Vector2 FoodSpawnTimes;
-
     public static System.Collections.Generic.List<long> spans;
 
     void Start()
@@ -22,7 +21,6 @@ public class WorldController : MonoBehaviour
         spans = new System.Collections.Generic.List<long>() { 100 };
         Valhalla.RefreshDashboard();
         InvokeRepeating(nameof(Spawn), CellSpawnTimes.x, CellSpawnTimes.y);
-        //InvokeRepeating(nameof(Food), FoodSpawnTimes.x, FoodSpawnTimes.y);
         InvokeRepeating(nameof(DecayScores), DecayScoreTimes.x, DecayScoreTimes.y);
     }
 
@@ -33,7 +31,7 @@ public class WorldController : MonoBehaviour
 
     void Spawn()
     {
-        Debug.Log(spans.Average());
+        //Debug.Log(spans.Average());
 
         int n = 0;
         var existingCells = FindObjectsOfType<MovementController>();
@@ -62,28 +60,17 @@ public class WorldController : MonoBehaviour
 
             var mc = cell.GetComponent<MovementController>();
             var hero = Valhalla.GetRandomHero();
-            if (Random.value < 0.95 && hero != null)
-                mc.SetBrain(new NeuralNetwork(hero, ValhallaMutation));
-            if (mc.Brain == null)
-                mc.SetBrain(new NeuralNetwork());
         }
     }
 
-    void Food()
+    void SpawnNEAT()
     {
-        for (int i = 0; i < 20; i++)
-        {
-            var pos = transform.position + (Vector3)Random.insideUnitCircle * CellSpawnRadius * 4f;
-            var food = Instantiate(FoodPrefab, pos, Quaternion.identity, transform);
-            food.GetComponent<SpriteRenderer>().material.color =
-                Random.ColorHSV(
-                0, 1,
-                0.6f, 1,
-                0.6f, 1,
-                1, 1);
-            food.GetComponent<SizeController>().Size = Random.Range(
-                WorldConfig.Instance.FoodSizeMin,
-                WorldConfig.Instance.FoodSizeMax);
-        }
+        var factory = new NeatGenomeFactory(15, 2);
+        // Erstellt ein neues, zufälliges Genom
+        NeatGenome newGenome = factory.CreateGenome(0);
+
+        // Konvertiert das Genom in ein neuronales Netzwerk
+        var decoder = new NeatGenomeDecoder(SharpNeat.Decoders.NetworkActivationScheme.CreateAcyclicScheme());
+        var network = decoder.Decode(newGenome);
     }
 }

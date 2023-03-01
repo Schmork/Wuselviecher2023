@@ -582,8 +582,7 @@ namespace SharpNeat.Genomes.Neat
             // Get IDs for the two new connections and a single neuron. This call will check the history 
             // buffer (AddedNeuronBuffer) for matching structures from previously added neurons (for the search as
             // a whole, not just on this genome).
-            AddedNeuronGeneStruct idStruct;
-            bool reusedIds = Mutate_AddNode_GetIDs(connectionToReplace.InnovationId, out idStruct);
+            bool reusedIds = Mutate_AddNode_GetIDs(connectionToReplace.InnovationId, out AddedNeuronGeneStruct idStruct);
 
             // Replace connection with two new connections and a new neuron. The first connection uses the weight
             // from the replaced connection (so it's functionally the same connection, but the ID is new). Ideally
@@ -799,8 +798,10 @@ namespace SharpNeat.Genomes.Neat
 
             // Maintain a set of neurons that have been visited. This allows us to avoid unnecessary re-traversal 
             // of the network and detection of cyclic connections.
-            HashSet<uint> visitedNeurons = new HashSet<uint>();
-            visitedNeurons.Add(sourceNeuron.Id);
+            HashSet<uint> visitedNeurons = new HashSet<uint>
+            {
+                sourceNeuron.Id
+            };
 
             // This search uses an explicitly created stack instead of function recursion, the logic here is that this 
             // may be more efficient through avoidance of multiple function calls (but not sure).
@@ -849,9 +850,8 @@ namespace SharpNeat.Genomes.Neat
             // Check if a matching mutation has already occured on another genome. 
             // If so then re-use the connection ID.
             ConnectionEndpointsStruct connectionKey = new ConnectionEndpointsStruct(sourceId, targetId);
-            uint? existingConnectionId;
             ConnectionGene newConnectionGene;
-            if(_genomeFactory.AddedConnectionBuffer.TryGetValue(connectionKey, out existingConnectionId))
+            if (_genomeFactory.AddedConnectionBuffer.TryGetValue(connectionKey, out uint? existingConnectionId))
             {   
                 // Create a new connection, re-using the ID from existingConnectionId, and add it to the Genome.
                 newConnectionGene = new ConnectionGene(existingConnectionId.Value,
@@ -1420,9 +1420,11 @@ namespace SharpNeat.Genomes.Neat
             Dictionary<uint,NeuronConnectionInfo> conInfoByNeuronId = new Dictionary<uint,NeuronConnectionInfo>(count);
             for(int i=0; i<nCount; i++)
             {
-                NeuronConnectionInfo conInfo = new NeuronConnectionInfo();
-                conInfo._srcNeurons = new HashSet<uint>();
-                conInfo._tgtNeurons = new HashSet<uint>();
+                NeuronConnectionInfo conInfo = new NeuronConnectionInfo
+                {
+                    _srcNeurons = new HashSet<uint>(),
+                    _tgtNeurons = new HashSet<uint>()
+                };
                 conInfoByNeuronId.Add(_neuronGeneList[i].Id, conInfo);
             }
 
