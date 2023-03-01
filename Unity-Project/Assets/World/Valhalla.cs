@@ -43,7 +43,7 @@ public class Valhalla : ScriptableObject
         {
             string networkJson = PlayerPrefs.GetString(metric.ToString(), null);
             if (networkJson == null) return;
-            fallenHeroes[metric] = JsonUtility.FromJson<NeuralNetwork>(networkJson);
+            //fallenHeroes[metric] = JsonUtility.FromJson<NeuralNetwork>(networkJson);
             var scoreStr = PlayerPrefs.GetString("score " + metric.ToString(), null);
             if (scoreStr == "") continue;
             bestScores[metric] = float.Parse(scoreStr, CultureInfo.InvariantCulture);
@@ -85,7 +85,7 @@ public class Valhalla : ScriptableObject
                     break;
         }
 
-        PlayerPrefs.SetString(metricType.ToString(), JsonUtility.ToJson(network));
+        //PlayerPrefs.SetString(metricType.ToString(), JsonUtility.ToJson(network));
         PlayerPrefs.SetString("score " + metricType.ToString(),
             bestScores[metricType].ToString(CultureInfo.InvariantCulture));
     }
@@ -117,7 +117,7 @@ public class Valhalla : ScriptableObject
 
         foreach (var metric in System.Enum.GetValues(typeof(Metric)))
         {
-            PlayerPrefs.SetString(metric.ToString(), JsonUtility.ToJson(new NeuralNetwork()));
+            //PlayerPrefs.SetString(metric.ToString(), JsonUtility.ToJson(new NeuralNetwork()));
             PlayerPrefs.SetInt("score " + metric.ToString(), 0);
         }
 

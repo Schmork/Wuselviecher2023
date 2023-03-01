@@ -4,34 +4,13 @@ using System.Collections.Generic;
 
 [System.Serializable]
 public class Connection
-{
+{   // the target is the neuron which holds the Connection
     public Neuron source;
-    public Neuron target;
     public float weight;
 
-    public Connection(Neuron source, float weight, Neuron target)
+    public Connection(Neuron source, float weight)
     {
         this.source = source;
         this.weight = weight;
-        this.target = target;
-    }
-
-    public override bool Equals(object obj)
-    {
-        if (obj == null || GetType() != obj.GetType())
-        {
-            return false;
-        }
-
-        Connection other = (Connection)obj;
-        return source.Equals(other.source) && target.Equals(other.target);
-    }
-
-    public override int GetHashCode()
-    {
-        int hashCode = -1943342112;
-        hashCode = hashCode * -1521134295 + EqualityComparer<Neuron>.Default.GetHashCode(source);
-        hashCode = hashCode * -1521134295 + EqualityComparer<Neuron>.Default.GetHashCode(target);
-        return hashCode;
     }
 }

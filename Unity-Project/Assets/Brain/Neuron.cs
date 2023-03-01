@@ -17,7 +17,9 @@ public class Path
 public class Neuron
 {
     public float bias;
-    public Connection[] connections = new Connection[0];
+    //public Connection[] connections;
+    public Neuron[] sources;
+    public float[] weights;
     public ActivationFunction function;
     public float value;
     public bool dirty;
@@ -40,9 +42,9 @@ public class Neuron
     public void Evaluate()
     {
         float sum = bias;
-        for (int i = 0; i < connections.Length; i++)
+        for (int i = 0; i < sources.Length; i++)
         {
-            sum += connections[i].weight * connections[i].source.value;
+            sum += weights[i] * sources[i].value;
         }
         value = Activation.Evaluate(function, sum);
         dirty = false;

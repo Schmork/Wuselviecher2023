@@ -40,32 +40,43 @@ public class NeuralNetwork : ICloneable
         layers.Add(new Layer(numOutputs));
         layers[^1].neurons[0].function = ActivationFunction.TanH;
         layers[^1].neurons[1].function = ActivationFunction.Sigmoid;
-        
-        List<Connection> connections = new List<Connection>();
-        int maxAttempts = 10;
-        while (connections.Count < numConnections)
+
+        Dictionary<Neuron, List<Connection>> connections = new Dictionary<Neuron, List<Connection>>();
+        foreach (var layer in layers)
         {
-            int attempts = 0;
-            while (attempts++ < maxAttempts)
+            if (layer == layers[0]) continue;
+            foreach (var neuron in layer.neurons)
             {
-                var sourceLayerIndex = UnityEngine.Random.Range(0, layers.Count - 1);
-                var sourceLayer = layers[sourceLayerIndex];
-                var sourceNeuron = sourceLayer.neurons[UnityEngine.Random.Range(0, sourceLayer.neurons.Length)];
-                var targetLayer = layers[UnityEngine.Random.Range(sourceLayerIndex, layers.Count)];
-                var targetNeuron = targetLayer.neurons[UnityEngine.Random.Range(0, targetLayer.neurons.Length)];
-                var connection = new Connection(sourceNeuron, UnityEngine.Random.Range(-1f, 1f), targetNeuron);
-                if (!connections.Any(c => c.Equals(connection)))
-                {
-                    connections.Add(connection);
-                }
+                connections[neuron] = new List<Connection>();
             }
         }
 
-        foreach (var layer in layers)
+        var conCount = 0;
+        while (conCount < numConnections)
         {
-            foreach (var neuron in layer.neurons)
+            var sourceLayerIndex = UnityEngine.Random.Range(0, layers.Count - 1);
+            var sourceLayer = layers[sourceLayerIndex];
+            var sourceNeuron = sourceLayer.neurons[UnityEngine.Random.Range(0, sourceLayer.neurons.Length)];
+            var targetLayer = layers[UnityEngine.Random.Range(sourceLayerIndex, layers.Count)];
+            var targetNeuron = targetLayer.neurons[UnityEngine.Random.Range(0, targetLayer.neurons.Length)];
+
+            var connection = new Connection(sourceNeuron, UnityEngine.Random.Range(-1f, 1f));
+            if (!connections[targetNeuron].Contains(connection))
             {
-                neuron.connections = connections.Where(c => c.target == neuron).ToArray();
+                conCount++;
+                connections[targetNeuron].Add(connection);
+            }
+        }
+
+        foreach (var neuron in connections.Keys)
+        {
+            var numCons = connections[neuron].Count;
+            neuron.sources = new Neuron[numCons];
+            neuron.weights = new float[numCons];
+            for (int i = 0; i < numCons; i++)
+            {
+                neuron.sources[i] = connections[neuron][i].source;
+                neuron.weights[i] = connections[neuron][i].weight;
             }
         }
 
@@ -114,14 +125,19 @@ public class NeuralNetwork : ICloneable
             return;
         }
 
-        foreach (Connection conn in lastNeuron.connections)
+        for (int i = 0; i < lastNeuron.sources.Length; i++)
         {
-            if (path.neurons.Contains(conn.source))
+
+        }
+
+        foreach (Neuron source in lastNeuron.sources)
+        {
+            if (path.neurons.Contains(source))
             {
                 continue;
             }
 
-            FindAllPathsHelper(paths, new Path(path.neurons.Append(conn.source).ToList()));
+            FindAllPathsHelper(paths, new Path(path.neurons.Append(source).ToList()));
         }
     }
 
