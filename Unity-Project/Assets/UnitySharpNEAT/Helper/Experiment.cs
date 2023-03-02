@@ -116,10 +116,14 @@ namespace UnitySharpNEAT
             _complexityThreshold = XmlUtils.TryGetValueAsInt(xmlConfig, "ComplexityThreshold");
             _description = XmlUtils.TryGetValueAsString(xmlConfig, "Description");
 
-            _eaParams = new NeatEvolutionAlgorithmParameters();
-            _eaParams.SpecieCount = _specieCount;
-            _neatGenomeParams = new NeatGenomeParameters();
-            _neatGenomeParams.FeedforwardOnly = _activationScheme.AcyclicNetwork;
+            _eaParams = new NeatEvolutionAlgorithmParameters
+            {
+                SpecieCount = _specieCount
+            };
+            _neatGenomeParams = new NeatGenomeParameters
+            {
+                FeedforwardOnly = _activationScheme.AcyclicNetwork
+            };
 
             _neatSupervisor = neatSupervisor;
 

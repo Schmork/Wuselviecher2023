@@ -36,7 +36,7 @@ namespace SharpNeat.Network
         /// <summary>
         /// Dictionary of node depths keyed by node ID. Working data.
         /// </summary>
-        Dictionary<uint,int> _nodeDepthById = new Dictionary<uint,int>();
+        readonly Dictionary<uint,int> _nodeDepthById = new Dictionary<uint,int>();
 
         #region Public Methods
 
@@ -71,12 +71,12 @@ namespace SharpNeat.Network
             for(int i=inputAndBiasCount; i<nodeCount; i++)
             {
                 // Lookup the node's depth. If not found depth remains set to zero.
-                int depth;
-                if(_nodeDepthById.TryGetValue(nodeList[i].Id, out depth)) 
+                if (_nodeDepthById.TryGetValue(nodeList[i].Id, out int depth))
                 {
                     nodeDepthArr[i] = depth;
                     // Also determine maximum depth, that is, total depth of the network.
-                    if(depth > maxDepth) {
+                    if (depth > maxDepth)
+                    {
                         maxDepth = depth;
                     }
                 }
@@ -93,8 +93,7 @@ namespace SharpNeat.Network
         private void TraverseNode(NodeConnectivityData nodeData, int depth)
         {
             // Check if the node has been visited before.
-            int assignedDepth;
-            if(_nodeDepthById.TryGetValue(nodeData._id, out assignedDepth) && assignedDepth >= depth)
+            if (_nodeDepthById.TryGetValue(nodeData._id, out int assignedDepth) && assignedDepth >= depth)
             {   // The node already has already been visited via a path that assigned it a greater depth than the 
                 // current path. Stop traversing this path.
                 return;

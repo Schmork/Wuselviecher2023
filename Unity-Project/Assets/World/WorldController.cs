@@ -16,8 +16,15 @@ public class WorldController : MonoBehaviour
 
     public static System.Collections.Generic.List<long> spans;
 
+    NeatGenomeFactory factory;
+    NeatGenomeDecoder decoder;
+
     void Start()
     {
+        factory = new NeatGenomeFactory(15, 2);
+        factory.NeatGenomeParameters.FeedforwardOnly = true;
+        decoder = new NeatGenomeDecoder(SharpNeat.Decoders.NetworkActivationScheme.CreateAcyclicScheme());
+
         spans = new System.Collections.Generic.List<long>() { 100 };
         Valhalla.RefreshDashboard();
         InvokeRepeating(nameof(Spawn), CellSpawnTimes.x, CellSpawnTimes.y);
@@ -58,19 +65,11 @@ public class WorldController : MonoBehaviour
                 WorldConfig.Instance.CellSizeMax);
             cell.GetComponent<StatsCollector>().Valhalla = Valhalla;
 
-            var mc = cell.GetComponent<MovementController>();
-            var hero = Valhalla.GetRandomHero();
+            //var hero = Valhalla.GetRandomHero();
+
+            factory.GenomeIdGenerator.Reset();
+            var network = decoder.Decode(factory.CreateGenomeList(1, 0)[0]);
+            cell.GetComponent<CellController>().ActivateUnit(network);
         }
-    }
-
-    void SpawnNEAT()
-    {
-        var factory = new NeatGenomeFactory(15, 2);
-        // Erstellt ein neues, zufälliges Genom
-        NeatGenome newGenome = factory.CreateGenome(0);
-
-        // Konvertiert das Genom in ein neuronales Netzwerk
-        var decoder = new NeatGenomeDecoder(SharpNeat.Decoders.NetworkActivationScheme.CreateAcyclicScheme());
-        var network = decoder.Decode(newGenome);
     }
 }

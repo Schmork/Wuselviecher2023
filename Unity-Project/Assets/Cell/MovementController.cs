@@ -23,6 +23,8 @@ public class MovementController : MonoBehaviour
 
     public void UseBlackBoxOutpts(ISignalArray outputSignalArray)
     {
+        if (sc == null || rb == null) return;
+
         var actions = new float[2];
         actions[0] = (float)outputSignalArray[0];
         actions[1] = (float)outputSignalArray[1];

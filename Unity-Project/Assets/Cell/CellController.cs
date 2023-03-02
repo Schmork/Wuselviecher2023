@@ -20,19 +20,21 @@ public class CellController : UnitController
 
     public override float GetFitness()
     {
-        Debug.Log("GetFitness");
+        //Debug.Log("GetFitness");
         //throw new System.NotImplementedException();
         return 0;
     }
 
     protected override void HandleIsActiveChanged(bool newIsActive)
     {
-        Debug.Log("HandleIsActiveChanged: " + newIsActive);
+        //Debug.Log("HandleIsActiveChanged: " + newIsActive);
         //throw new System.NotImplementedException();
     }
 
     protected override void UpdateBlackBoxInputs(ISignalArray inputSignalArray)
     {
+        if (BlackBox == null) return;
+
         var inputList = new List<float> { sc.Size / 500f, rb.velocity.magnitude / 10f, rb.angularVelocity / 50f };
         // memNeurons
         inputList.AddRange(sensors.Scan());
@@ -42,15 +44,15 @@ public class CellController : UnitController
             inputSignalArray[i] = inputList[i];
         }
 
-        Debug.Log("UpdateBlackBoxInputs: " + inputSignalArray);
-        //throw new System.NotImplementedException();
+        //Debug.Log("UpdateBlackBoxInputs: " + inputSignalArray);
     }
 
     protected override void UseBlackBoxOutpts(ISignalArray outputSignalArray)
     {
+        if (BlackBox == null) return;
+
         mc.UseBlackBoxOutpts(outputSignalArray);
 
-        Debug.Log("UseBlackBoxOutpts: " + outputSignalArray);
-        //throw new System.NotImplementedException();
+        //Debug.Log("UseBlackBoxOutpts: " + outputSignalArray);
     }
 }
