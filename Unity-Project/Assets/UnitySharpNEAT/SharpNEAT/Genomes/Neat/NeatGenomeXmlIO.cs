@@ -124,10 +124,8 @@ namespace SharpNeat.Genomes.Neat
         /// <param name="genomeFactory">A NeatGenomeFactory object to construct genomes against.</param>
         public static List<NeatGenome> LoadCompleteGenomeList(XmlNode xmlNode, bool nodeFnIds, NeatGenomeFactory genomeFactory)
         {
-            using(XmlNodeReader xr = new XmlNodeReader(xmlNode))
-            {
-                return ReadCompleteGenomeList(xr, nodeFnIds, genomeFactory);
-            }
+            using XmlNodeReader xr = new XmlNodeReader(xmlNode);
+            return ReadCompleteGenomeList(xr, nodeFnIds, genomeFactory);
         }
 
         /// <summary>
@@ -138,10 +136,8 @@ namespace SharpNeat.Genomes.Neat
         /// for HyperNEAT genomes but not for NEAT</param>
         public static NeatGenome LoadGenome(XmlNode xmlNode, bool nodeFnIds)
         {
-            using(XmlNodeReader xr = new XmlNodeReader(xmlNode))
-            {
-                return ReadGenome(xr, nodeFnIds);
-            }
+            using XmlNodeReader xr = new XmlNodeReader(xmlNode);
+            return ReadGenome(xr, nodeFnIds);
         }
 
         #endregion
@@ -195,10 +191,18 @@ namespace SharpNeat.Genomes.Neat
         /// <param name="genome">Genome to write as XML.</param>
         /// <param name="nodeFnIds">Indicates if node activation function IDs should be emitted. They are required
         /// for HyperNEAT genomes but not for NEAT.</param>
-        public static void WriteComplete(XmlWriter xw, NeatGenome genome, bool nodeFnIds)
+        public static void WriteComplete(XmlWriter xw, NeatGenome genome, bool nodeFnIds, Valhalla.Metric metricType = default, float score = 0)
         {
             // <Root>
             xw.WriteStartElement(__ElemRoot);
+
+            xw.WriteStartElement("Metric");
+            xw.WriteAttributeString("Metric", metricType.ToString());
+            xw.WriteEndElement();
+
+            xw.WriteStartElement("Score");
+            xw.WriteAttributeString("Score", score.ToString(CultureInfo.InvariantCulture));
+            xw.WriteEndElement();
 
             // Write activation function library.
             NetworkXmlIO.Write(xw, genome.ActivationFnLibrary);
@@ -231,7 +235,6 @@ namespace SharpNeat.Genomes.Neat
             xw.WriteAttributeString(__AttrFitness, genome.EvaluationInfo.Fitness.ToString("R", NumberFormatInfo.InvariantInfo));
 
             // Emit nodes.
-            StringBuilder sb = new StringBuilder();
             xw.WriteStartElement(__ElemNodes);
             foreach(NeuronGene nGene in genome.NeuronGeneList)
             {
@@ -387,13 +390,11 @@ namespace SharpNeat.Genomes.Neat
             // Read genome ID attribute if present. Otherwise default to zero; it's the caller's responsibility to 
             // check IDs are unique and in-line with the genome factory's ID generators.
             string genomeIdStr = xr.GetAttribute(__AttrId);
-            uint genomeId;
-            uint.TryParse(genomeIdStr, out genomeId);
+            uint.TryParse(genomeIdStr, out uint genomeId);
 
             // Read birthGeneration attribute if present. Otherwise default to zero.
             string birthGenStr = xr.GetAttribute(__AttrBirthGeneration);
-            uint birthGen;
-            uint.TryParse(birthGenStr, out birthGen);
+            uint.TryParse(birthGenStr, out uint birthGen);
 
             // Find <Nodes>.
             XmlIoUtils.MoveToElement(xr, true, __ElemNodes);

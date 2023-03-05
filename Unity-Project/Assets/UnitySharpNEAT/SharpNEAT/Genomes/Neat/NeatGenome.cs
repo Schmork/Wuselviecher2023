@@ -101,10 +101,10 @@ namespace SharpNeat.Genomes.Neat
         /// Constructs with the provided ID, birth generation and gene lists.
         /// </summary>
         public NeatGenome(NeatGenomeFactory genomeFactory,
-                          uint id, 
+                          uint id,
                           uint birthGeneration,
-                          NeuronGeneList neuronGeneList, 
-                          ConnectionGeneList connectionGeneList, 
+                          NeuronGeneList neuronGeneList,
+                          ConnectionGeneList connectionGeneList,
                           int inputNeuronCount,
                           int outputNeuronCount,
                           bool rebuildNeuronGeneConnectionInfo)
@@ -118,17 +118,18 @@ namespace SharpNeat.Genomes.Neat
             _outputNeuronCount = outputNeuronCount;
 
             // Precalculate some often used values.
-            _inputAndBiasNeuronCount = inputNeuronCount+1;
+            _inputAndBiasNeuronCount = inputNeuronCount + 1;
             _inputBiasOutputNeuronCount = _inputAndBiasNeuronCount + outputNeuronCount;
 
             // Rebuild per neuron connection info if caller has requested it.
-            if(rebuildNeuronGeneConnectionInfo) {
+            if (rebuildNeuronGeneConnectionInfo)
+            {
                 RebuildNeuronGeneConnectionInfo();
             }
 
             // If we have a factory then create the evaluation info object now, also count the nodes that have auxiliary state.
             // Otherwise wait until the factory is provided through the property setter.
-            if(null != _genomeFactory) 
+            if (null != _genomeFactory)
             {
                 _evalInfo = new EvaluationInfo(genomeFactory.NeatGenomeParameters.FitnessHistoryLength);
                 _auxStateNeuronCount = CountAuxStateNodes();
@@ -149,14 +150,14 @@ namespace SharpNeat.Genomes.Neat
             // These copy constructors make clones of the genes rather than copies of the object references.
             _neuronGeneList = new NeuronGeneList(copyFrom._neuronGeneList);
             _connectionGeneList = new ConnectionGeneList(copyFrom._connectionGeneList);
-            
+
             // Copy precalculated values.
             _inputNeuronCount = copyFrom._inputNeuronCount;
             _outputNeuronCount = copyFrom._outputNeuronCount;
             _auxStateNeuronCount = copyFrom._auxStateNeuronCount;
             _inputAndBiasNeuronCount = copyFrom._inputAndBiasNeuronCount;
             _inputBiasOutputNeuronCount = copyFrom._inputBiasOutputNeuronCount;
-            
+
             _evalInfo = new EvaluationInfo(copyFrom.EvaluationInfo.FitnessHistoryLength);
 
             Debug.Assert(PerformIntegrityCheck());
@@ -179,8 +180,8 @@ namespace SharpNeat.Genomes.Neat
         /// Gets or sets a specie index. This is the index of the species that the genome is in.
         /// Implementing this is required only when using evolution algorithms that speciate genomes.
         /// </summary>
-        public int SpecieIdx 
-        { 
+        public int SpecieIdx
+        {
             get { return _specieIdx; }
             set { _specieIdx = value; }
         }
@@ -208,8 +209,8 @@ namespace SharpNeat.Genomes.Neat
         /// neurons is less important and can be viewed as being a limit on the possible number of
         /// connections.
         /// </summary>
-        public double Complexity 
-        { 
+        public double Complexity
+        {
             get { return _connectionGeneList.Count; }
         }
 
@@ -218,11 +219,11 @@ namespace SharpNeat.Genomes.Neat
         /// as the genetic encoding space). This allows speciation/clustering algorithms to operate on
         /// an abstract cordinate data type rather than being coded against specific IGenome types.
         /// </summary>
-        public CoordinateVector Position 
-        { 
+        public CoordinateVector Position
+        {
             get
             {
-                if(null == _position)
+                if (null == _position)
                 {
                     // Consider each connection gene as a dimension where the innovation ID is the
                     // dimension's ID and the weight is the position within that dimension.
@@ -231,10 +232,11 @@ namespace SharpNeat.Genomes.Neat
                     ConnectionGeneList list = _connectionGeneList;
 
                     int count = list.Count;
-                    KeyValuePair<ulong,double>[] coordElemArray = new KeyValuePair<ulong,double>[count];
+                    KeyValuePair<ulong, double>[] coordElemArray = new KeyValuePair<ulong, double>[count];
 
-                    for(int i=0; i<count; i++) {
-                        coordElemArray[i] = new KeyValuePair<ulong,double>(list[i].InnovationId, list[i].Weight);
+                    for (int i = 0; i < count; i++)
+                    {
+                        coordElemArray[i] = new KeyValuePair<ulong, double>(list[i].InnovationId, list[i].Weight);
                     }
                     _position = new CoordinateVector(coordElemArray);
                 }
@@ -248,8 +250,8 @@ namespace SharpNeat.Genomes.Neat
         /// cache the phenome in order to avoid decoding on each re-evaluation; However, this is optional.
         /// The phenome in un-typed to prevent the class framework from becoming overly complex.
         /// </summary>
-        public object CachedPhenome 
-        { 
+        public object CachedPhenome
+        {
             get { return _cachedPhenome; }
             set { _cachedPhenome = value; }
         }
@@ -295,18 +297,21 @@ namespace SharpNeat.Genomes.Neat
             // neuron ID dictionary. We do this so that we can use the dictionary later on as a complete list of
             // all neuron IDs required by the offspring genome - if we didn't do this we might miss some of the fixed neurons
             // that happen to not be connected to or from.
-            SortedDictionary<uint,NeuronGene> neuronDictionary = connectionListBuilder.NeuronDictionary;
-            for(int i=0; i<_inputBiasOutputNeuronCount; i++) {
+            SortedDictionary<uint, NeuronGene> neuronDictionary = connectionListBuilder.NeuronDictionary;
+            for (int i = 0; i < _inputBiasOutputNeuronCount; i++)
+            {
                 neuronDictionary.Add(_neuronGeneList[i].InnovationId, _neuronGeneList[i].CreateCopy(false));
             }
 
             // A variable that stores which parent is fittest, 1 or 2. We pre-calculate this value because this
             // fitness test needs to be done in subsequent sub-routine calls for each connection gene.
             int fitSwitch;
-            if(_evalInfo.Fitness > parent._evalInfo.Fitness) {
+            if (_evalInfo.Fitness > parent._evalInfo.Fitness)
+            {
                 fitSwitch = 1;
             }
-            else if(_evalInfo.Fitness < parent._evalInfo.Fitness) {
+            else if (_evalInfo.Fitness < parent._evalInfo.Fitness)
+            {
                 fitSwitch = 2;
             }
             else
@@ -325,7 +330,7 @@ namespace SharpNeat.Genomes.Neat
             // For disjoint and excess genes, if they are on the fittest parent (as indicated by fitSwitch) we always take that gene.
             // If the disjoint/excess gene is on the least fit parent then we take that gene also but only when 
             // combineDisjointExcessFlag is true.
-            
+
             // Loop 1: Get all genes that are present on the fittest parent. 
             // Note. All accepted genes are accumulated within connectionListBuilder.
             // Note. Any disjoint/excess genes that we wish to select from the least fit parent are stored in a second list for processing later 
@@ -335,26 +340,26 @@ namespace SharpNeat.Genomes.Neat
             // genome to check if it would create a cycle.
             List<CorrelationItem> disjointExcessGeneList = combineDisjointExcessFlag ? new List<CorrelationItem>(correlationResults.CorrelationStatistics.DisjointConnectionGeneCount + correlationResults.CorrelationStatistics.ExcessConnectionGeneCount) : null;
 
-            foreach(CorrelationItem correlItem in correlationResults.CorrelationItemList)
+            foreach (CorrelationItem correlItem in correlationResults.CorrelationItemList)
             {
                 // Determine which genome to copy from (if any)
                 int selectionSwitch;
-                if(CorrelationItemType.Match == correlItem.CorrelationItemType) 
+                if (CorrelationItemType.Match == correlItem.CorrelationItemType)
                 {   // For matches pick a parent genome at random (they both have the same connection gene, 
                     // but with a different connection weight)   
                     selectionSwitch = RouletteWheel.SingleThrow(0.5, _genomeFactory.Rng) ? 1 : 2;
                 }
-                else if(1==fitSwitch && null != correlItem.ConnectionGene1) 
+                else if (1 == fitSwitch && null != correlItem.ConnectionGene1)
                 {   // Disjoint/excess gene on the fittest genome (genome #1).
                     selectionSwitch = 1;
                 }
-                else if(2==fitSwitch && null != correlItem.ConnectionGene2) 
+                else if (2 == fitSwitch && null != correlItem.ConnectionGene2)
                 {   // Disjoint/excess gene on the fittest genome (genome #2).
                     selectionSwitch = 2;
                 }
-                else 
+                else
                 {   // Disjoint/excess gene on the least fit genome. 
-                    if(combineDisjointExcessFlag) 
+                    if (combineDisjointExcessFlag)
                     {   // Put to one side for processing later.
                         disjointExcessGeneList.Add(correlItem);
                     }
@@ -365,10 +370,13 @@ namespace SharpNeat.Genomes.Neat
                 // Get ref to the selected connection gene and its source target neuron genes.
                 ConnectionGene connectionGene;
                 NeatGenome parentGenome;
-                if(1 == selectionSwitch) {
+                if (1 == selectionSwitch)
+                {
                     connectionGene = correlItem.ConnectionGene1;
                     parentGenome = this;
-                } else {
+                }
+                else
+                {
                     connectionGene = correlItem.ConnectionGene2;
                     parentGenome = parent;
                 }
@@ -382,24 +390,27 @@ namespace SharpNeat.Genomes.Neat
 
             // Loop 2: Add disjoint/excess genes from the least fit parent (if any). These may create connectivity cycles, hence we need to test
             // for this when evoloving feedforward-only networks.
-            if(null != disjointExcessGeneList && 0 != disjointExcessGeneList.Count)
+            if (null != disjointExcessGeneList && 0 != disjointExcessGeneList.Count)
             {
-                foreach(CorrelationItem correlItem in disjointExcessGeneList)
+                foreach (CorrelationItem correlItem in disjointExcessGeneList)
                 {
                     // Get ref to the selected connection gene and its source target neuron genes.
                     ConnectionGene connectionGene;
                     NeatGenome parentGenome;
-                    if(null != correlItem.ConnectionGene1) {
+                    if (null != correlItem.ConnectionGene1)
+                    {
                         connectionGene = correlItem.ConnectionGene1;
                         parentGenome = this;
-                    } else {
+                    }
+                    else
+                    {
                         connectionGene = correlItem.ConnectionGene2;
                         parentGenome = parent;
                     }
 
                     // We are effectively adding connections from one genome to another, as such it is possible to create cyclic conenctions here.
                     // Thus only add the connection if we allow cyclic connections *or* the connection does not form a cycle.
-                    if(!_genomeFactory.NeatGenomeParameters.FeedforwardOnly || !connectionListBuilder.IsConnectionCyclic(connectionGene.SourceNodeId, connectionGene.TargetNodeId))
+                    if (!_genomeFactory.NeatGenomeParameters.FeedforwardOnly || !connectionListBuilder.IsConnectionCyclic(connectionGene.SourceNodeId, connectionGene.TargetNodeId))
                     {   // Add connection gene to the offspring's genome.
                         connectionListBuilder.TryAddGene(connectionGene, parentGenome, false);
                     }
@@ -408,7 +419,8 @@ namespace SharpNeat.Genomes.Neat
 
             // Extract the connection builders definitive list of neurons into a list.
             NeuronGeneList neuronGeneList = new NeuronGeneList(connectionListBuilder.NeuronDictionary.Count);
-            foreach(NeuronGene neuronGene in neuronDictionary.Values) {   
+            foreach (NeuronGene neuronGene in neuronDictionary.Values)
+            {
                 neuronGeneList.Add(neuronGene);
             }
 
@@ -417,7 +429,7 @@ namespace SharpNeat.Genomes.Neat
             // - which returns correlation items in order.
             return _genomeFactory.CreateGenome(_genomeFactory.NextGenomeId(), birthGeneration,
                                                                neuronGeneList, connectionListBuilder.ConnectionGeneList,
-                                                               _inputNeuronCount, _outputNeuronCount, false);            
+                                                               _inputNeuronCount, _outputNeuronCount, false);
         }
 
         #endregion
@@ -434,9 +446,10 @@ namespace SharpNeat.Genomes.Neat
         public NeatGenomeFactory GenomeFactory
         {
             get { return _genomeFactory; }
-            set 
+            set
             {
-                if(null != _genomeFactory) {
+                if (null != _genomeFactory)
+                {
                     throw new SharpNeatException("NeatGenome already has an assigned GenomeFactory.");
                 }
                 _genomeFactory = value;
@@ -444,13 +457,13 @@ namespace SharpNeat.Genomes.Neat
                 _auxStateNeuronCount = CountAuxStateNodes();
             }
         }
-        
+
         /// <summary>
         /// Gets the genome's list of neuron genes.
         /// </summary>
         public NeuronGeneList NeuronGeneList
         {
-            get { return _neuronGeneList; } 
+            get { return _neuronGeneList; }
         }
 
         /// <summary>
@@ -502,19 +515,19 @@ namespace SharpNeat.Genomes.Neat
             // If we have fewer than two connections then use an alternative RouletteWheelLayout that avoids 
             // destructive mutations. This prevents the creation of genomes with no connections.
             RouletteWheelLayout rwlInitial = (_connectionGeneList.Count < 2) ?
-                  _genomeFactory.NeatGenomeParameters.RouletteWheelLayoutNonDestructive 
+                  _genomeFactory.NeatGenomeParameters.RouletteWheelLayoutNonDestructive
                 : _genomeFactory.NeatGenomeParameters.RouletteWheelLayout;
 
             // Select a type of mutation and attempt to perform it. If that mutation is not possible
             // then we eliminate that possibility from the roulette wheel and try again until a mutation is successful 
             // or we have no mutation types remaining to try.
             RouletteWheelLayout rwlCurrent = rwlInitial;
-            bool success = false;
             bool structureChange = false;
-            for(;;)
+            for (int i = 0; i < 20; i++)
             {
                 int outcome = RouletteWheel.SingleThrow(rwlCurrent, _genomeFactory.Rng);
-                switch(outcome)
+                bool success;
+                switch (outcome)
                 {
                     case 0:
                         Mutate_ConnectionWeights();
@@ -538,9 +551,9 @@ namespace SharpNeat.Genomes.Neat
                 }
 
                 // Success. Break out of loop.
-                if(success) 
+                if (success)
                 {
-                    if(structureChange) 
+                    if (structureChange)
                     {   // Discard any cached connectivity data. It is now invalidated.
                         _networkConnectivityData = null;
                     }
@@ -549,7 +562,7 @@ namespace SharpNeat.Genomes.Neat
 
                 // Mutation did not succeed. Remove attempted type of mutation from set of possible outcomes.
                 rwlCurrent = rwlCurrent.RemoveOutcome(outcome);
-                if(0.0 == rwlCurrent.ProbabilitiesTotal)
+                if (0.0 == rwlCurrent.ProbabilitiesTotal)
                 {   // Nothing left to try. Do nothing.
                     return;
                 }
@@ -567,7 +580,7 @@ namespace SharpNeat.Genomes.Neat
         /// <returns>Returns the added NeuronGene if successful, otherwise null.</returns>
         private NeuronGene Mutate_AddNode()
         {
-            if(0 == _connectionGeneList.Count) 
+            if (0 == _connectionGeneList.Count)
             {   // Nodes are added by splitting an existing connection into two and placing a new node
                 // between the two new connections. Since we don't have any connections to split we
                 // indicate failure.
@@ -607,7 +620,7 @@ namespace SharpNeat.Genomes.Neat
             // lower values than other genes in the current genome. Therefore we need to be careful to ensure the 
             // genes lists remain sorted by innovation ID. The most efficient means of doing this is to insert the new 
             // genes into the correct location (as opposed to adding them to the list ends and re-sorting the lists).
-            if(reusedIds) 
+            if (reusedIds)
             {
                 _neuronGeneList.InsertIntoPosition(newNeuronGene);
                 _connectionGeneList.InsertIntoPosition(newConnectionGene1);
@@ -636,7 +649,8 @@ namespace SharpNeat.Genomes.Neat
             newNeuronGene.TargetNeurons.Add(connectionToReplace.TargetNodeId);
 
             // Track aux state node count and update stats.
-            if(_genomeFactory.ActivationFnLibrary.GetFunction(newNeuronGene.ActivationFnId).AcceptsAuxArgs) {
+            if (_genomeFactory.ActivationFnLibrary.GetFunction(newNeuronGene.ActivationFnId).AcceptsAuxArgs)
+            {
                 _auxStateNeuronCount++;
             }
             _genomeFactory.Stats._mutationCountAddNode++;
@@ -656,16 +670,16 @@ namespace SharpNeat.Genomes.Neat
         private bool Mutate_AddNode_GetIDs(uint connectionToReplaceId, out AddedNeuronGeneStruct idStruct)
         {
             bool registerNewStruct = false;
-            if(_genomeFactory.AddedNeuronBuffer.TryGetValue(connectionToReplaceId, out idStruct))
-            {   
+            if (_genomeFactory.AddedNeuronBuffer.TryGetValue(connectionToReplaceId, out idStruct))
+            {
                 // Found existing matching structure.
                 // However we can only re-use the IDs from that structrue if they aren't already present in the current genome;
                 // this is possible because genes can be acquired from other genomes via sexual reproduction.
                 // Therefore we only re-use IDs if we can re-use all three together, otherwise we aren't assigning the IDs to matching
                 // structures throughout the population, which is the reason for ID re-use.
-                if(_neuronGeneList.BinarySearch(idStruct.AddedNeuronId) == -1
+                if (_neuronGeneList.BinarySearch(idStruct.AddedNeuronId) == -1
                 && _connectionGeneList.BinarySearch(idStruct.AddedInputConnectionId) == -1
-                && _connectionGeneList.BinarySearch(idStruct.AddedOutputConnectionId) == -1)             
+                && _connectionGeneList.BinarySearch(idStruct.AddedOutputConnectionId) == -1)
                 {
                     // Return true to indicate re-use of existing IDs.
                     return true;
@@ -683,7 +697,8 @@ namespace SharpNeat.Genomes.Neat
 
             // If the connectionToReplaceId was not found (above) then we register it along with the new structure 
             // it is being replaced with.
-            if(registerNewStruct) {   
+            if (registerNewStruct)
+            {
                 _genomeFactory.AddedNeuronBuffer.Enqueue(connectionToReplaceId, idStruct);
             }
             return false;
@@ -708,7 +723,7 @@ namespace SharpNeat.Genomes.Neat
             // of testing the suitability of randomly selected pairs and after some number of failed tests we bail out
             // of the routine and perform weight mutation as a last resort - so that we did at least some form of mutation on 
             // the genome.
-            if(_neuronGeneList.Count < 3) 
+            if (_neuronGeneList.Count < 3)
             {   // We should always have at least three neurons - one each of a bias, input and output neuron.
                 return null;
             }
@@ -720,34 +735,35 @@ namespace SharpNeat.Genomes.Neat
             int inputBiasHiddenNeuronCount = neuronCount - _outputNeuronCount;
 
             // Use slightly different logic when evolving feedforward only networks.
-            if(_genomeFactory.NeatGenomeParameters.FeedforwardOnly)
+            if (_genomeFactory.NeatGenomeParameters.FeedforwardOnly)
             {
                 // Feeforward networks.
-                for(int attempts=0; attempts<5; attempts++)
+                for (int attempts = 0; attempts < 5; attempts++)
                 {
                     // Select candidate source and target neurons. 
                     // Valid source nodes are bias, input and hidden nodes. Output nodes are not source node candidates
                     // for acyclic nets (because that can prevent futrue conenctions from targeting the output if it would
                     // create a cycle).
                     int srcNeuronIdx = _genomeFactory.Rng.Next(inputBiasHiddenNeuronCount);
-                    if(srcNeuronIdx >= _inputAndBiasNeuronCount) {
+                    if (srcNeuronIdx >= _inputAndBiasNeuronCount)
+                    {
                         srcNeuronIdx += _outputNeuronCount;
                     }
 
                     // Valid target nodes are all hidden and output nodes.
                     // ENHANCEMENT: Devise more efficient strategy. This can still select the same node as source and target (the cyclic conenction is tested for below). 
-                    int tgtNeuronIdx = _inputAndBiasNeuronCount + _genomeFactory.Rng.Next(hiddenOutputNeuronCount-1);
-                    if(srcNeuronIdx == tgtNeuronIdx)
+                    int tgtNeuronIdx = _inputAndBiasNeuronCount + _genomeFactory.Rng.Next(hiddenOutputNeuronCount - 1);
+                    if (srcNeuronIdx == tgtNeuronIdx)
                     {
                         // The source neuron was selected. To ensure selections are evenly distributed across all valid targets, this
                         // selection is substituted with the last possible node in the list of possibilities (the last output node).
-                        tgtNeuronIdx = neuronCount-1;
+                        tgtNeuronIdx = neuronCount - 1;
                     }
 
                     // Test if this connection already exists or is recurrent
-                    NeuronGene sourceNeuron = _neuronGeneList[srcNeuronIdx];            
+                    NeuronGene sourceNeuron = _neuronGeneList[srcNeuronIdx];
                     NeuronGene targetNeuron = _neuronGeneList[tgtNeuronIdx];
-                    if(sourceNeuron.TargetNeurons.Contains(targetNeuron.Id) || IsConnectionCyclic(sourceNeuron, targetNeuron.Id)) 
+                    if (sourceNeuron.TargetNeurons.Contains(targetNeuron.Id) || IsConnectionCyclic(sourceNeuron, targetNeuron.Id))
                     {   // Try again.
                         continue;
                     }
@@ -757,7 +773,7 @@ namespace SharpNeat.Genomes.Neat
             else
             {
                 // Recurrent networks.
-                for(int attempts=0; attempts<5; attempts++)
+                for (int attempts = 0; attempts < 5; attempts++)
                 {
                     // Select candidate source and target neurons. Any neuron can be used as the source. Input neurons 
                     // should not be used as a target           
@@ -766,9 +782,9 @@ namespace SharpNeat.Genomes.Neat
                     int tgtNeuronIdx = _inputAndBiasNeuronCount + _genomeFactory.Rng.Next(hiddenOutputNeuronCount);
 
                     // Test if this connection already exists.
-                    NeuronGene sourceNeuron = _neuronGeneList[srcNeuronIdx];            
+                    NeuronGene sourceNeuron = _neuronGeneList[srcNeuronIdx];
                     NeuronGene targetNeuron = _neuronGeneList[tgtNeuronIdx];
-                    if(sourceNeuron.TargetNeurons.Contains(targetNeuron.Id)) 
+                    if (sourceNeuron.TargetNeurons.Contains(targetNeuron.Id))
                     {   // Try again.
                         continue;
                     }
@@ -788,7 +804,8 @@ namespace SharpNeat.Genomes.Neat
         private bool IsConnectionCyclic(NeuronGene sourceNeuron, uint targetNeuronId)
         {
             // Quick test. Is connection connecting a neuron to itself.
-            if(sourceNeuron.Id == targetNeuronId) {
+            if (sourceNeuron.Id == targetNeuronId)
+            {
                 return true;
             }
 
@@ -809,31 +826,35 @@ namespace SharpNeat.Genomes.Neat
 
             // Push source neuron's sources onto the work stack. We could just push the source neuron but we choose
             // to cover that test above to avoid the one extra neuronID lookup that would require.
-            foreach(uint neuronId in sourceNeuron.SourceNeurons) {
+            foreach (uint neuronId in sourceNeuron.SourceNeurons)
+            {
                 workStack.Push(neuronId);
             }
 
             // While there are neurons to check/traverse.
-            while(0 != workStack.Count)
+            while (0 != workStack.Count)
             {
                 // Pop a neuron to check from the top of the stack, and then check it.
                 uint currNeuronId = workStack.Pop();
-                if(visitedNeurons.Contains(currNeuronId)) {
+                if (visitedNeurons.Contains(currNeuronId))
+                {
                     // Already visited (via a different route).
                     continue;
                 }
 
-                if(currNeuronId == targetNeuronId) {
+                if (currNeuronId == targetNeuronId)
+                {
                     // Target neuron already feeds into the source neuron.
                     return true;
                 }
 
                 // Register visit of this node.
-                visitedNeurons.Add(currNeuronId);                
+                visitedNeurons.Add(currNeuronId);
 
                 // Push the current neuron's source neurons onto the work stack.
                 NeuronGene currNeuron = _neuronGeneList.GetNeuronById(currNeuronId);
-                foreach(uint neuronId in currNeuron.SourceNeurons) {
+                foreach (uint neuronId in currNeuron.SourceNeurons)
+                {
                     workStack.Push(neuronId);
                 }
             }
@@ -852,7 +873,7 @@ namespace SharpNeat.Genomes.Neat
             ConnectionEndpointsStruct connectionKey = new ConnectionEndpointsStruct(sourceId, targetId);
             ConnectionGene newConnectionGene;
             if (_genomeFactory.AddedConnectionBuffer.TryGetValue(connectionKey, out uint? existingConnectionId))
-            {   
+            {
                 // Create a new connection, re-using the ID from existingConnectionId, and add it to the Genome.
                 newConnectionGene = new ConnectionGene(existingConnectionId.Value,
                                                         sourceId, targetId,
@@ -864,7 +885,7 @@ namespace SharpNeat.Genomes.Neat
                 _connectionGeneList.InsertIntoPosition(newConnectionGene);
             }
             else
-            {   
+            {
                 // Create a new connection with a new ID and add it to the Genome.
                 newConnectionGene = new ConnectionGene(_genomeFactory.NextInnovationId(),
                                                         sourceId, targetId,
@@ -893,7 +914,7 @@ namespace SharpNeat.Genomes.Neat
         /// </summary>
         private bool Mutate_NodeAuxState()
         {
-            if(_auxStateNeuronCount == 0)
+            if (_auxStateNeuronCount == 0)
             {   // No nodes with aux state. Indicate failure.
                 return false;
             }
@@ -905,21 +926,22 @@ namespace SharpNeat.Genomes.Neat
 
             IActivationFunctionLibrary fnLib = _genomeFactory.ActivationFnLibrary;
             NeuronGene gene;
-            if(_auxStateNeuronCount == _neuronGeneList.Count)
+            if (_auxStateNeuronCount == _neuronGeneList.Count)
             {
                 gene = _neuronGeneList[auxStateNodeIdx];
             }
             else
             {
                 // Scan for selected gene.
-                int i=0;
-                for(int j=0; j<auxStateNodeIdx; i++)
+                int i = 0;
+                for (int j = 0; j < auxStateNodeIdx; i++)
                 {
-                    if(fnLib.GetFunction(_neuronGeneList[i].ActivationFnId).AcceptsAuxArgs) {
+                    if (fnLib.GetFunction(_neuronGeneList[i].ActivationFnId).AcceptsAuxArgs)
+                    {
                         j++;
                     }
                 }
-                gene = _neuronGeneList[i-1];
+                gene = _neuronGeneList[i - 1];
             }
 
             Debug.Assert(fnLib.GetFunction(gene.ActivationFnId).AcceptsAuxArgs);
@@ -936,7 +958,7 @@ namespace SharpNeat.Genomes.Neat
         /// </summary>
         private ConnectionGene Mutate_DeleteConnection()
         {
-            if(_connectionGeneList.Count < 2) 
+            if (_connectionGeneList.Count < 2)
             {   // Either no connections to delete or only one. Indicate failure.
                 return null;
             }
@@ -954,15 +976,16 @@ namespace SharpNeat.Genomes.Neat
             NeuronGene srcNeuronGene = _neuronGeneList[srcNeuronIdx];
             srcNeuronGene.TargetNeurons.Remove(connectionToDelete.TargetNodeId);
 
-            if(IsNeuronRedundant(srcNeuronGene))
-            {   
+            if (IsNeuronRedundant(srcNeuronGene))
+            {
                 // Remove neuron.
                 _neuronGeneList.RemoveAt(srcNeuronIdx);
 
                 // Track aux state node count.
-                if(_genomeFactory.ActivationFnLibrary.GetFunction(srcNeuronGene.ActivationFnId).AcceptsAuxArgs) {
+                if (_genomeFactory.ActivationFnLibrary.GetFunction(srcNeuronGene.ActivationFnId).AcceptsAuxArgs)
+                {
                     _auxStateNeuronCount--;
-                } 
+                }
             }
 
             // Target neuron.
@@ -971,16 +994,17 @@ namespace SharpNeat.Genomes.Neat
             tgtNeuronGene.SourceNeurons.Remove(connectionToDelete.SourceNodeId);
 
             // Note. Check that source and target neurons are not the same neuron.
-            if(    srcNeuronGene != tgtNeuronGene
+            if (srcNeuronGene != tgtNeuronGene
                 && IsNeuronRedundant(tgtNeuronGene))
-            {   
+            {
                 // Remove neuron.
                 _neuronGeneList.RemoveAt(tgtNeuronIdx);
 
                 // Track aux state node count.
-                if(_genomeFactory.ActivationFnLibrary.GetFunction(tgtNeuronGene.ActivationFnId).AcceptsAuxArgs) {
+                if (_genomeFactory.ActivationFnLibrary.GetFunction(tgtNeuronGene.ActivationFnId).AcceptsAuxArgs)
+                {
                     _auxStateNeuronCount--;
-                } 
+                }
             }
 
             _genomeFactory.Stats._mutationCountDeleteConnection++;
@@ -993,28 +1017,28 @@ namespace SharpNeat.Genomes.Neat
         {
             // Determine the type of weight mutation to perform.
             ConnectionMutationInfo mutationInfo = _genomeFactory.NeatGenomeParameters.ConnectionMutationInfoList.GetRandomItem(_genomeFactory.Rng);
-    
+
             // Get a delegate that performs the mutation specified by mutationInfo. The alternative is to use a switch statement
             // test purturbance type on each connection weight mutation - which creates a lot of unnecessary branch instructions.
             MutateWeightMethod mutateWeigthMethod = Mutate_ConnectionWeights_GetMutateWeightMethod(mutationInfo);
 
             // Perform mutations of the required type.
-            if(mutationInfo.SelectionType == ConnectionSelectionType.Proportional)
+            if (mutationInfo.SelectionType == ConnectionSelectionType.Proportional)
             {
-                bool mutationOccured=false;
+                bool mutationOccured = false;
                 int connectionCount = _connectionGeneList.Count;
 
                 // ENHANCEMENT: The fastest approach here depends on SelectionProportion and the number of connections...
                 // .. implement a simple heuristic.
-                for(int i=0; i<connectionCount; i++)
+                for (int i = 0; i < connectionCount; i++)
                 {
-                    if(_genomeFactory.Rng.NextDouble() < mutationInfo.SelectionProportion)
+                    if (_genomeFactory.Rng.NextDouble() < mutationInfo.SelectionProportion)
                     {
                         _connectionGeneList[i].Weight = mutateWeigthMethod(_connectionGeneList[i].Weight, mutationInfo);
                         mutationOccured = true;
                     }
                 }
-                if(!mutationOccured && 0!=connectionCount)
+                if (!mutationOccured && 0 != connectionCount)
                 {   // Perform at least one mutation. Pick a gene at random.
                     ConnectionGene connectionGene = _connectionGeneList[_genomeFactory.Rng.Next(connectionCount)];
                     connectionGene.Weight = mutateWeigthMethod(connectionGene.Weight, mutationInfo);
@@ -1025,7 +1049,8 @@ namespace SharpNeat.Genomes.Neat
                 // Determine how many mutations to perform. At least one - if there are any genes.
                 int connectionCount = _connectionGeneList.Count;
                 int mutations = Math.Min(connectionCount, mutationInfo.SelectionQuantity);
-                if(0==mutations) {
+                if (0 == mutations)
+                {
                     return;
                 }
 
@@ -1041,20 +1066,20 @@ namespace SharpNeat.Genomes.Neat
                 // possibility of getting stuck in the inner while loop forever, as well as preventing previously 
                 // mutated connections from being mutated again.
                 _connectionGeneList.ResetIsMutatedFlags();
-                
+
                 int maxRetries = mutations * 5;
-                for(int i=0, retryCount=0; i<mutations && retryCount < maxRetries; i++)
+                for (int i = 0, retryCount = 0; i < mutations && retryCount < maxRetries; i++)
                 {
                     // Pick an index at random.
                     int index = _genomeFactory.Rng.Next(connectionCount);
 
                     // Test if the connection has already been mutated.
-                    if(_connectionGeneList[index].IsMutated)
+                    if (_connectionGeneList[index].IsMutated)
                     {
                         retryCount++;
                         continue;
                     }
-                    
+
                     // Mutate the gene at 'index'.
                     _connectionGeneList[index].Weight = mutateWeigthMethod(_connectionGeneList[index].Weight, mutationInfo);
                     _connectionGeneList[index].IsMutated = true;
@@ -1073,28 +1098,29 @@ namespace SharpNeat.Genomes.Neat
         private MutateWeightMethod Mutate_ConnectionWeights_GetMutateWeightMethod(ConnectionMutationInfo mutationInfo)
         {
             // ENHANCEMENT: Can we use something akin to a closure here to package up mutation params with the delegate code?
-            switch(mutationInfo.PerturbanceType)
+            switch (mutationInfo.PerturbanceType)
             {
                 case ConnectionPerturbanceType.JiggleUniform:
-                {
-                    return delegate(double weight, ConnectionMutationInfo info)
                     {
-                        return CapWeight(weight + (((_genomeFactory.Rng.NextDouble()*2.0) - 1.0) * info.PerturbanceMagnitude));
-                    };
-                }
+                        return delegate (double weight, ConnectionMutationInfo info)
+                        {
+                            return CapWeight(weight + (((_genomeFactory.Rng.NextDouble() * 2.0) - 1.0) * info.PerturbanceMagnitude));
+                        };
+                    }
                 case ConnectionPerturbanceType.JiggleGaussian:
-                {
-                    return delegate(double weight, ConnectionMutationInfo info)
                     {
-                        return CapWeight(weight + _genomeFactory.SampleGaussianDistribution(0, info.Sigma));
-                    };
-                }
+                        return delegate (double weight, ConnectionMutationInfo info)
+                        {
+                            return CapWeight(weight + _genomeFactory.SampleGaussianDistribution(0, info.Sigma));
+                        };
+                    }
                 case ConnectionPerturbanceType.Reset:
-                {
-                    return delegate {
-                        return _genomeFactory.GenerateRandomConnectionWeight();
-                    };
-                }
+                    {
+                        return delegate
+                        {
+                            return _genomeFactory.GenerateRandomConnectionWeight();
+                        };
+                    }
             }
             throw new SharpNeatException("Unexpected ConnectionPerturbanceType");
         }
@@ -1102,11 +1128,11 @@ namespace SharpNeat.Genomes.Neat
         private double CapWeight(double weight)
         {
             double weightRange = _genomeFactory.NeatGenomeParameters.ConnectionWeightRange;
-            if(weight > weightRange) 
+            if (weight > weightRange)
             {
                 weight = weightRange;
             }
-            else if(weight < -weightRange) 
+            else if (weight < -weightRange)
             {
                 weight = -weightRange;
             }
@@ -1118,7 +1144,8 @@ namespace SharpNeat.Genomes.Neat
         /// </summary>
         private bool IsNeuronRedundant(NeuronGene neuronGene)
         {
-            if(neuronGene.NodeType != NodeType.Hidden) {
+            if (neuronGene.NodeType != NodeType.Hidden)
+            {
                 return false;
             }
             return (0 == (neuronGene.SourceNeurons.Count + neuronGene.TargetNeurons.Count));
@@ -1137,41 +1164,43 @@ namespace SharpNeat.Genomes.Neat
             // connections list counts..
             CorrelationResults correlationResults = new CorrelationResults(list1.Count + list2.Count);
 
-        //----- Test for special cases.
+            //----- Test for special cases.
             int list1Count = list1.Count;
             int list2Count = list2.Count;
-            if(0 == list1Count && 0 == list2Count)
+            if (0 == list1Count && 0 == list2Count)
             {   // Both lists are empty!
                 return correlationResults;
             }
 
-            if(0 == list1Count)
+            if (0 == list1Count)
             {   // All list2 genes are excess.
                 correlationResults.CorrelationStatistics.ExcessConnectionGeneCount = list2Count;
-                foreach(ConnectionGene connectionGene in list2) {
+                foreach (ConnectionGene connectionGene in list2)
+                {
                     correlationResults.CorrelationItemList.Add(new CorrelationItem(CorrelationItemType.Excess, null, connectionGene));
                 }
                 return correlationResults;
             }
 
-            if(0 == list2Count)
+            if (0 == list2Count)
             {   // All list1 genes are excess.
                 correlationResults.CorrelationStatistics.ExcessConnectionGeneCount = list1Count;
-                foreach(ConnectionGene connectionGene in list1) {
+                foreach (ConnectionGene connectionGene in list1)
+                {
                     correlationResults.CorrelationItemList.Add(new CorrelationItem(CorrelationItemType.Excess, connectionGene, null));
                 }
                 return correlationResults;
             }
 
-        //----- Both connection genes lists contain genes - compare their contents.
-            int list1Idx=0;
-            int list2Idx=0;
+            //----- Both connection genes lists contain genes - compare their contents.
+            int list1Idx = 0;
+            int list2Idx = 0;
             ConnectionGene connectionGene1 = list1[list1Idx];
             ConnectionGene connectionGene2 = list2[list2Idx];
-            for(;;)
+            for (; ; )
             {
-                if(connectionGene2.InnovationId < connectionGene1.InnovationId)
-                {   
+                if (connectionGene2.InnovationId < connectionGene1.InnovationId)
+                {
                     // connectionGene2 is disjoint.
                     correlationResults.CorrelationItemList.Add(new CorrelationItem(CorrelationItemType.Disjoint, null, connectionGene2));
                     correlationResults.CorrelationStatistics.DisjointConnectionGeneCount++;
@@ -1179,7 +1208,7 @@ namespace SharpNeat.Genomes.Neat
                     // Move to the next gene in list2.
                     list2Idx++;
                 }
-                else if(connectionGene1.InnovationId == connectionGene2.InnovationId)
+                else if (connectionGene1.InnovationId == connectionGene2.InnovationId)
                 {
                     correlationResults.CorrelationItemList.Add(new CorrelationItem(CorrelationItemType.Match, connectionGene1, connectionGene2));
                     correlationResults.CorrelationStatistics.ConnectionWeightDelta += Math.Abs(connectionGene1.Weight - connectionGene2.Weight);
@@ -1190,7 +1219,7 @@ namespace SharpNeat.Genomes.Neat
                     list2Idx++;
                 }
                 else // (connectionGene2.InnovationId > connectionGene1.InnovationId)
-                {   
+                {
                     // connectionGene1 is disjoint.
                     correlationResults.CorrelationItemList.Add(new CorrelationItem(CorrelationItemType.Disjoint, connectionGene1, null));
                     correlationResults.CorrelationStatistics.DisjointConnectionGeneCount++;
@@ -1198,14 +1227,14 @@ namespace SharpNeat.Genomes.Neat
                     // Move to the next gene in list1.
                     list1Idx++;
                 }
-                
+
                 // Check if we have reached the end of one (or both) of the lists. If we have reached the end of both then 
                 // although we enter the first 'if' block it doesn't matter because the contained loop is not entered if both 
                 // lists have been exhausted.
-                if(list1Count == list1Idx)
-                {   
+                if (list1Count == list1Idx)
+                {
                     // All remaining list2 genes are excess.
-                    for(; list2Idx < list2Count; list2Idx++)
+                    for (; list2Idx < list2Count; list2Idx++)
                     {
                         correlationResults.CorrelationItemList.Add(new CorrelationItem(CorrelationItemType.Excess, null, list2[list2Idx]));
                         correlationResults.CorrelationStatistics.ExcessConnectionGeneCount++;
@@ -1213,10 +1242,10 @@ namespace SharpNeat.Genomes.Neat
                     return correlationResults;
                 }
 
-                if(list2Count == list2Idx)
+                if (list2Count == list2Idx)
                 {
                     // All remaining list1 genes are excess.
-                    for(; list1Idx < list1Count; list1Idx++)
+                    for (; list1Idx < list1Count; list1Idx++)
                     {
                         correlationResults.CorrelationItemList.Add(new CorrelationItem(CorrelationItemType.Excess, list1[list1Idx], null));
                         correlationResults.CorrelationStatistics.ExcessConnectionGeneCount++;
@@ -1238,9 +1267,10 @@ namespace SharpNeat.Genomes.Neat
             IActivationFunctionLibrary fnLib = _genomeFactory.ActivationFnLibrary;
             int auxNodeCount = 0;
             int nodeCount = _neuronGeneList.Count;
-            for(int i=0; i<nodeCount; i++)
+            for (int i = 0; i < nodeCount; i++)
             {
-                if(fnLib.GetFunction(_neuronGeneList[i].ActivationFnId).AcceptsAuxArgs) {
+                if (fnLib.GetFunction(_neuronGeneList[i].ActivationFnId).AcceptsAuxArgs)
+                {
                     auxNodeCount++;
                 }
             }
@@ -1255,7 +1285,7 @@ namespace SharpNeat.Genomes.Neat
         {
             // Ensure data is cleared down.
             int nCount = _neuronGeneList.Count;
-            for(int i=0; i<nCount; i++)
+            for (int i = 0; i < nCount; i++)
             {
                 NeuronGene nGene = _neuronGeneList[i];
                 nGene.SourceNeurons.Clear();
@@ -1264,7 +1294,7 @@ namespace SharpNeat.Genomes.Neat
 
             // Loop connections and register them with neuron genes.
             int cCount = _connectionGeneList.Count;
-            for(int i=0; i<cCount; i++)
+            for (int i = 0; i < cCount; i++)
             {
                 ConnectionGene cGene = _connectionGeneList[i];
                 NeuronGene srcNeuronGene = _neuronGeneList.GetNeuronById(cGene.SourceNodeId);
@@ -1285,27 +1315,31 @@ namespace SharpNeat.Genomes.Neat
         public bool PerformIntegrityCheck()
         {
             // Check genome class type (can only do this if we have a genome factory).
-            if(null != _genomeFactory && !_genomeFactory.CheckGenomeType(this)) {
+            if (null != _genomeFactory && !_genomeFactory.CheckGenomeType(this))
+            {
                 Debug.WriteLine(string.Format("Invalid genome class type [{0}]", this.GetType().Name));
                 return false;
             }
 
             // Check neuron genes.
             int count = _neuronGeneList.Count;
-            
+
             // We will always have at least a bias and an output.
-            if(count < 2) {
+            if (count < 2)
+            {
                 Debug.WriteLine(string.Format("NeuronGeneList has less than the minimum number of neuron genes [{0}]", count));
                 return false;
             }
 
             // Check bias neuron.
-            if(NodeType.Bias != _neuronGeneList[0].NodeType) {
+            if (NodeType.Bias != _neuronGeneList[0].NodeType)
+            {
                 Debug.WriteLine("Missing bias gene");
                 return false;
             }
 
-            if(0u != _neuronGeneList[0].InnovationId) {
+            if (0u != _neuronGeneList[0].InnovationId)
+            {
                 Debug.WriteLine(string.Format("Bias neuron ID != 0. [{0}]", _neuronGeneList[0].InnovationId));
                 return false;
             }
@@ -1313,14 +1347,16 @@ namespace SharpNeat.Genomes.Neat
             // Check input neurons.
             uint prevId = 0u;
             int idx = 1;
-            for(int i=0; i<_inputNeuronCount; i++, idx++)
+            for (int i = 0; i < _inputNeuronCount; i++, idx++)
             {
-                if(NodeType.Input != _neuronGeneList[idx].NodeType) {
+                if (NodeType.Input != _neuronGeneList[idx].NodeType)
+                {
                     Debug.WriteLine(string.Format("Invalid neuron gene type. Expected Input, got [{0}]", _neuronGeneList[idx].NodeType));
                     return false;
                 }
 
-                if(_neuronGeneList[idx].InnovationId <= prevId) {
+                if (_neuronGeneList[idx].InnovationId <= prevId)
+                {
                     Debug.WriteLine("Input neuron gene is out of order and/or a duplicate.");
                     return false;
                 }
@@ -1329,14 +1365,16 @@ namespace SharpNeat.Genomes.Neat
             }
 
             // Check output neurons.
-            for(int i=0; i<_outputNeuronCount; i++, idx++)
+            for (int i = 0; i < _outputNeuronCount; i++, idx++)
             {
-                if(NodeType.Output != _neuronGeneList[idx].NodeType) {
+                if (NodeType.Output != _neuronGeneList[idx].NodeType)
+                {
                     Debug.WriteLine(string.Format("Invalid neuron gene type. Expected Output, got [{0}]", _neuronGeneList[idx].NodeType));
                     return false;
                 }
 
-                if(_neuronGeneList[idx].InnovationId <= prevId) {
+                if (_neuronGeneList[idx].InnovationId <= prevId)
+                {
                     Debug.WriteLine("Output neuron gene is out of order and/or a duplicate.");
                     return false;
                 }
@@ -1346,14 +1384,16 @@ namespace SharpNeat.Genomes.Neat
 
             // Check hidden neurons.
             // All remaining neurons should be hidden neurons.
-            for(; idx<count; idx++)
+            for (; idx < count; idx++)
             {
-                if(NodeType.Hidden != _neuronGeneList[idx].NodeType) {
+                if (NodeType.Hidden != _neuronGeneList[idx].NodeType)
+                {
                     Debug.WriteLine(string.Format("Invalid neuron gene type. Expected Hidden, got [{0}]", _neuronGeneList[idx].NodeType));
                     return false;
                 }
 
-                if(_neuronGeneList[idx].InnovationId <= prevId) {
+                if (_neuronGeneList[idx].InnovationId <= prevId)
+                {
                     Debug.WriteLine("Hidden neuron gene is out of order and/or a duplicate.");
                     return false;
                 }
@@ -1362,16 +1402,19 @@ namespace SharpNeat.Genomes.Neat
             }
 
             // Count nodes with aux state (can only do this if we have a genome factory).
-            if(null != _genomeFactory)
+            if (null != _genomeFactory)
             {
                 IActivationFunctionLibrary fnLib = _genomeFactory.ActivationFnLibrary;
                 int auxStateNodeCount = 0;
-                for(int i=0; i<count; i++) {
-                    if(fnLib.GetFunction(_neuronGeneList[i].ActivationFnId).AcceptsAuxArgs) {
+                for (int i = 0; i < count; i++)
+                {
+                    if (fnLib.GetFunction(_neuronGeneList[i].ActivationFnId).AcceptsAuxArgs)
+                    {
                         auxStateNodeCount++;
                     }
                 }
-                if(_auxStateNeuronCount != auxStateNodeCount) {
+                if (_auxStateNeuronCount != auxStateNodeCount)
+                {
                     Debug.WriteLine("Aux state neuron count is incorrect.");
                     return false;
                 }
@@ -1379,7 +1422,7 @@ namespace SharpNeat.Genomes.Neat
 
             // Check connection genes.
             count = _connectionGeneList.Count;
-            if(0 == count) 
+            if (0 == count)
             {   // At least one connection is required. 
                 // (A) Connectionless genomes are pointless and 
                 // (B) Connections form the basis for defining a genome's position in the encoding space.
@@ -1388,24 +1431,26 @@ namespace SharpNeat.Genomes.Neat
                 return false;
             }
 
-            Dictionary<ConnectionEndpointsStruct, object> endpointDict = new Dictionary<ConnectionEndpointsStruct,object>(count);
-            
+            Dictionary<ConnectionEndpointsStruct, object> endpointDict = new Dictionary<ConnectionEndpointsStruct, object>(count);
+
             // Initialise with the first connection's details.
             ConnectionGene connectionGene = _connectionGeneList[0];
             prevId = connectionGene.InnovationId;
             endpointDict.Add(new ConnectionEndpointsStruct(connectionGene.SourceNodeId, connectionGene.TargetNodeId), null);
 
             // Loop over remaining connections.
-            for(int i=1; i<count; i++)
+            for (int i = 1; i < count; i++)
             {
                 connectionGene = _connectionGeneList[i];
-                if(connectionGene.InnovationId <= prevId) {
+                if (connectionGene.InnovationId <= prevId)
+                {
                     Debug.WriteLine("Connection gene is out of order and/or a duplicate.");
                     return false;
                 }
 
                 ConnectionEndpointsStruct key = new ConnectionEndpointsStruct(connectionGene.SourceNodeId, connectionGene.TargetNodeId);
-                if(endpointDict.ContainsKey(key)) {
+                if (endpointDict.ContainsKey(key))
+                {
                     Debug.WriteLine("Connection gene error. A connection between the specified endpoints already exists.");
                     return false;
                 }
@@ -1417,8 +1462,8 @@ namespace SharpNeat.Genomes.Neat
             // Check each neuron gene's list of source and target neurons.
             // Init connection info per neuron.
             int nCount = _neuronGeneList.Count;
-            Dictionary<uint,NeuronConnectionInfo> conInfoByNeuronId = new Dictionary<uint,NeuronConnectionInfo>(count);
-            for(int i=0; i<nCount; i++)
+            Dictionary<uint, NeuronConnectionInfo> conInfoByNeuronId = new Dictionary<uint, NeuronConnectionInfo>(count);
+            for (int i = 0; i < nCount; i++)
             {
                 NeuronConnectionInfo conInfo = new NeuronConnectionInfo
                 {
@@ -1430,7 +1475,7 @@ namespace SharpNeat.Genomes.Neat
 
             // Compile connectivity info.
             int cCount = _connectionGeneList.Count;
-            for(int i=0; i<cCount; i++)
+            for (int i = 0; i < cCount; i++)
             {
                 ConnectionGene cGene = _connectionGeneList[i];
                 conInfoByNeuronId[cGene.SourceNodeId]._tgtNeurons.Add(cGene.TargetNodeId);
@@ -1438,36 +1483,40 @@ namespace SharpNeat.Genomes.Neat
             }
 
             // Compare connectivity info with that recorded in each NeuronGene.
-            for(int i=0; i<nCount; i++)
+            for (int i = 0; i < nCount; i++)
             {
                 NeuronGene nGene = _neuronGeneList[i];
                 NeuronConnectionInfo conInfo = conInfoByNeuronId[nGene.Id];
 
                 // Check source node count.
-                if(nGene.SourceNeurons.Count != conInfo._srcNeurons.Count) {
+                if (nGene.SourceNeurons.Count != conInfo._srcNeurons.Count)
+                {
                     Debug.WriteLine("NeuronGene has incorrect number of source neurons recorded.");
                     return false;
                 }
 
                 // Check target node count.
-                if(nGene.TargetNeurons.Count != conInfo._tgtNeurons.Count) {
+                if (nGene.TargetNeurons.Count != conInfo._tgtNeurons.Count)
+                {
                     Debug.WriteLine("NeuronGene has incorrect number of target neurons recorded.");
                     return false;
                 }
 
                 // Check that the source node IDs match up.
-                foreach(uint srcNeuronId in nGene.SourceNeurons)
+                foreach (uint srcNeuronId in nGene.SourceNeurons)
                 {
-                    if(!conInfo._srcNeurons.Contains(srcNeuronId)) {
+                    if (!conInfo._srcNeurons.Contains(srcNeuronId))
+                    {
                         Debug.WriteLine("NeuronGene has incorrect list of source neurons recorded.");
                         return false;
                     }
                 }
 
                 // Check that the target node IDs match up.
-                foreach(uint tgtNeuronId in nGene.TargetNeurons)
+                foreach (uint tgtNeuronId in nGene.TargetNeurons)
                 {
-                    if(!conInfo._tgtNeurons.Contains(tgtNeuronId)) {
+                    if (!conInfo._tgtNeurons.Contains(tgtNeuronId))
+                    {
                         Debug.WriteLine("NeuronGene has incorrect list of target neurons recorded.");
                         return false;
                     }
@@ -1476,9 +1525,10 @@ namespace SharpNeat.Genomes.Neat
 
             // Check that network is acyclic if we are evolving feedforward only networks 
             // (can only do this if we have a genome factory).
-            if(null != _genomeFactory && _genomeFactory.NeatGenomeParameters.FeedforwardOnly)
+            if (null != _genomeFactory && _genomeFactory.NeatGenomeParameters.FeedforwardOnly)
             {
-                if(CyclicNetworkTest.IsNetworkCyclic(this)) {
+                if (CyclicNetworkTest.IsNetworkCyclic(this))
+                {
                     Debug.WriteLine("Feedforward only network has one or more cyclic paths.");
                     return false;
                 }
@@ -1530,7 +1580,7 @@ namespace SharpNeat.Genomes.Neat
         /// Gets the network's activation function library. The activation function at each node is 
         /// represented by an integer ID, which refers to a function in this activation function library.
         /// </summary>
-        public IActivationFunctionLibrary ActivationFnLibrary 
+        public IActivationFunctionLibrary ActivationFnLibrary
         {
             get { return _genomeFactory.ActivationFnLibrary; }
         }
@@ -1538,9 +1588,9 @@ namespace SharpNeat.Genomes.Neat
         /// <summary>
         /// Gets a bool flag that indicates if the network is acyclic.
         /// </summary>
-        public bool IsAcyclic 
-        { 
-            get { return _genomeFactory.NeatGenomeParameters.FeedforwardOnly;  }
+        public bool IsAcyclic
+        {
+            get { return _genomeFactory.NeatGenomeParameters.FeedforwardOnly; }
         }
 
         /// <summary>
@@ -1564,18 +1614,18 @@ namespace SharpNeat.Genomes.Neat
         /// </summary>
         public NetworkConnectivityData GetConnectivityData()
         {
-            if(null != _networkConnectivityData) 
+            if (null != _networkConnectivityData)
             {   // Return cached data.
                 return _networkConnectivityData;
             }
 
             int nodeCount = _neuronGeneList.Count;
             NodeConnectivityData[] nodeConnectivityDataArr = new NodeConnectivityData[nodeCount];
-            Dictionary<uint,NodeConnectivityData> nodeConnectivityDataById = new Dictionary<uint,NodeConnectivityData>(nodeCount);
+            Dictionary<uint, NodeConnectivityData> nodeConnectivityDataById = new Dictionary<uint, NodeConnectivityData>(nodeCount);
 
             // NeatGenome(s) have connectivity data pre-calculated, as such we point to this data rather than copying or
             // rebuilding it. Essentially NetworkConnectivityData becomes a useful general-purpose layer over the connectivity data.
-            for(int i=0; i<nodeCount; i++)
+            for (int i = 0; i < nodeCount; i++)
             {
                 NeuronGene neuronGene = _neuronGeneList[i];
                 NodeConnectivityData ncd = new NodeConnectivityData(neuronGene.Id, neuronGene.SourceNeurons, neuronGene.TargetNeurons);

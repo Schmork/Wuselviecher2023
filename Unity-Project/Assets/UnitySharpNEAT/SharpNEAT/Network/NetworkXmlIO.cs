@@ -123,10 +123,8 @@ namespace SharpNeat.Network
         /// all node activation function IDs default to 0.</param>
         public static List<NetworkDefinition> LoadCompleteGenomeList(XmlNode xmlNode, bool nodeFnIds)
         {
-            using(XmlNodeReader xr = new XmlNodeReader(xmlNode))
-            {
-                return ReadCompleteNetworkDefinitionList(xr, nodeFnIds);
-            }
+            using XmlNodeReader xr = new XmlNodeReader(xmlNode);
+            return ReadCompleteNetworkDefinitionList(xr, nodeFnIds);
         }
 
         /// <summary>
@@ -138,10 +136,8 @@ namespace SharpNeat.Network
         /// for HyperNEAT genomes but not for NEAT.  If false then all node activation function IDs default to 0.</param>
         public static NetworkDefinition ReadGenome(XmlNode xmlNode, IActivationFunctionLibrary activationFnLib, bool nodeFnIds)
         {
-            using(XmlNodeReader xr = new XmlNodeReader(xmlNode))
-            {
-                return ReadNetworkDefinition(xr, activationFnLib, nodeFnIds);
-            }
+            using XmlNodeReader xr = new XmlNodeReader(xmlNode);
+            return ReadNetworkDefinition(xr, activationFnLib, nodeFnIds);
         }
 
         #endregion
@@ -501,19 +497,15 @@ namespace SharpNeat.Network
         /// </summary>
         public static NodeType GetNodeType(string type)
         {
-            switch(type)
+            return type switch
             {
-                case "bias":
-                    return NodeType.Bias;
-                case "in":
-                    return NodeType.Input;
-                case "out":
-                    return NodeType.Output;
-                case "hid":
-                    return NodeType.Hidden;
-            }
-        //    throw new InvalidDataException(string.Format("Unknown node type [{0}]", type));
-            throw new IOException(string.Format("Unknown node type [{0}]", type));  
+                "bias" => NodeType.Bias,
+                "in" => NodeType.Input,
+                "out" => NodeType.Output,
+                "hid" => NodeType.Hidden,
+                //    throw new InvalidDataException(string.Format("Unknown node type [{0}]", type));
+                _ => throw new IOException(string.Format("Unknown node type [{0}]", type)),
+            };
         }
 
         /// <summary>
@@ -522,18 +514,14 @@ namespace SharpNeat.Network
         /// </summary>
         public static string GetNodeTypeString(NodeType nodeType)
         {
-            switch(nodeType)
+            return nodeType switch
             {
-                case NodeType.Bias:
-                    return "bias";
-                case NodeType.Input:
-                    return "in";
-                case NodeType.Output:
-                    return "out";
-                case NodeType.Hidden:
-                    return "hid";
-            }
-            throw new ArgumentException(string.Format("Unexpected NodeType [{0}]", nodeType));
+                NodeType.Bias => "bias",
+                NodeType.Input => "in",
+                NodeType.Output => "out",
+                NodeType.Hidden => "hid",
+                _ => throw new ArgumentException(string.Format("Unexpected NodeType [{0}]", nodeType)),
+            };
         }
 
         /// <summary>
@@ -541,38 +529,24 @@ namespace SharpNeat.Network
         /// </summary>
         public static IActivationFunction GetActivationFunction(string name)
         {
-            switch(name)
+            return name switch
             {
-                case "BipolarGaussian":
-                    return BipolarGaussian.__DefaultInstance;
-                case "BipolarSigmoid":
-                    return BipolarSigmoid.__DefaultInstance;
-                case "Linear":
-                    return Linear.__DefaultInstance;
-                case "Sine":
-                    return Sine.__DefaultInstance;
-                case "Absolute":
-                    return Absolute.__DefaultInstance;
-                case "AbsoluteRoot":
-                    return AbsoluteRoot.__DefaultInstance;
-                case "Gaussian":
-                    return Gaussian.__DefaultInstance;
-                case "InverseAbsoluteSigmoid":
-                    return InverseAbsoluteSigmoid.__DefaultInstance;
-                case "PlainSigmoid":
-                    return PlainSigmoid.__DefaultInstance;
-                case "ReducedSigmoid":
-                    return ReducedSigmoid.__DefaultInstance;
-                case "SteepenedSigmoid":
-                    return SteepenedSigmoid.__DefaultInstance;
-                case "SteepenedSigmoidApproximation":
-                    return SteepenedSigmoidApproximation.__DefaultInstance;
-                case "StepFunction":
-                    return StepFunction.__DefaultInstance;
-                case "RbfGaussian":
-                    return RbfGaussian.__DefaultInstance;
-            }
-            throw new ArgumentException(string.Format("Unexpected activation function [{0}]", name));
+                "BipolarGaussian" => BipolarGaussian.__DefaultInstance,
+                "BipolarSigmoid" => BipolarSigmoid.__DefaultInstance,
+                "Linear" => Linear.__DefaultInstance,
+                "Sine" => Sine.__DefaultInstance,
+                "Absolute" => Absolute.__DefaultInstance,
+                "AbsoluteRoot" => AbsoluteRoot.__DefaultInstance,
+                "Gaussian" => Gaussian.__DefaultInstance,
+                "InverseAbsoluteSigmoid" => InverseAbsoluteSigmoid.__DefaultInstance,
+                "PlainSigmoid" => PlainSigmoid.__DefaultInstance,
+                "ReducedSigmoid" => ReducedSigmoid.__DefaultInstance,
+                "SteepenedSigmoid" => SteepenedSigmoid.__DefaultInstance,
+                "SteepenedSigmoidApproximation" => SteepenedSigmoidApproximation.__DefaultInstance,
+                "StepFunction" => StepFunction.__DefaultInstance,
+                "RbfGaussian" => RbfGaussian.__DefaultInstance,
+                _ => throw new ArgumentException(string.Format("Unexpected activation function [{0}]", name)),
+            };
         }
 
         #endregion

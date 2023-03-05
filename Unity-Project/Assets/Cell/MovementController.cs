@@ -29,7 +29,8 @@ public class MovementController : MonoBehaviour
         actions[0] = (float)outputSignalArray[0];
         actions[1] = (float)outputSignalArray[1];
 
-        var torque = 500f / Mathf.Pow(sc.Size + 1, 0.7f) / (Mathf.Abs(rb.angularVelocity) + 0.0001f);
+        var torque = 150f / Mathf.Pow(sc.Size + 1, 0.7f);
+        //var torque = 500f / Mathf.Pow(sc.Size + 1, 0.7f) / (Mathf.Abs(rb.angularVelocity) + 0.0001f);
         var thrust = 250f * sc.Size;
 
         rb.AddTorque(actions[0] * torque * Time.deltaTime);

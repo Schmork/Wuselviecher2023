@@ -36,19 +36,12 @@ namespace UnitySharpNEAT
         /// </summary>
         public static string GetSaveFilePath(string experimentName, ExperimentFileType fileType)
         {
-            string extention;
-            switch (fileType)
+            string extention = fileType switch
             {
-                case ExperimentFileType.Champion:
-                    extention = FILE_EXTENTION_CHAMPION;
-                    break;
-                case ExperimentFileType.Population:
-                    extention = FILE_EXTENTION_POPULATION;
-                    break;
-                default:
-                    extention = ".UnknownNeatFileType";
-                    break;
-            }
+                ExperimentFileType.Champion => FILE_EXTENTION_CHAMPION,
+                ExperimentFileType.Population => FILE_EXTENTION_POPULATION,
+                _ => ".UnknownNeatFileType",
+            };
             return Application.persistentDataPath + "/" + experimentName + extention;
         }
 
@@ -73,8 +66,10 @@ namespace UnitySharpNEAT
         /// </summary>
         private static bool WriteGenomes(INeatExperiment experiment, IList<NeatGenome> genomeList, ExperimentFileType fileType)
         {
-            XmlWriterSettings _xwSettings = new XmlWriterSettings();
-            _xwSettings.Indent = true;
+            XmlWriterSettings _xwSettings = new XmlWriterSettings
+            {
+                Indent = true
+            };
 
             string filePath = GetSaveFilePath(experiment.Name, fileType);
             
@@ -84,15 +79,14 @@ namespace UnitySharpNEAT
                 Debug.Log("ExperimentIO - Creating subdirectory");
                 dirInf.Create();
             }
+
             try
             {
-                using (XmlWriter xw = XmlWriter.Create(filePath, _xwSettings))
-                {
-                    NeatGenomeXmlIO.WriteComplete(xw, genomeList, false);
-                    Debug.Log("Successfully saved the genomes of the '" + fileType.ToString() + "' for the experiment '" + experiment.Name + "' to the location:\n" + filePath);
-                }
+                using XmlWriter xw = XmlWriter.Create(filePath, _xwSettings);
+                NeatGenomeXmlIO.WriteComplete(xw, genomeList, false);
+                Debug.Log("Successfully saved the genomes of the '" + fileType.ToString() + "' for the experiment '" + experiment.Name + "' to the location:\n" + filePath);
             }
-            catch (Exception e1)
+            catch (Exception)
             {
                 Debug.Log("Error saving the genomes of the '" + fileType.ToString() + "' for the experiment '" + experiment.Name + "' to the location:\n" + filePath);
                 return false;
@@ -134,13 +128,11 @@ namespace UnitySharpNEAT
 
             try
             {
-                using (XmlReader xr = XmlReader.Create(filePath))
-                {
-                    genomeList = NeatGenomeXmlIO.ReadCompleteGenomeList(xr, false, genomeFactory);
+                using XmlReader xr = XmlReader.Create(filePath);
+                genomeList = NeatGenomeXmlIO.ReadCompleteGenomeList(xr, false, genomeFactory);
 
-                    if(genomeList != null && genomeList.Count > 0)
-                        Utility.Log("Successfully loaded the genomes of the '" + fileType.ToString() + "' for the experiment '" + experiment.Name + "' from the location:\n" + filePath);
-                }
+                if (genomeList != null && genomeList.Count > 0)
+                    Utility.Log("Successfully loaded the genomes of the '" + fileType.ToString() + "' for the experiment '" + experiment.Name + "' from the location:\n" + filePath);
             }
             catch (Exception e1)
             {

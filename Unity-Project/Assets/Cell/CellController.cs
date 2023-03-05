@@ -1,3 +1,4 @@
+using SharpNeat.Genomes.Neat;
 using SharpNeat.Phenomes;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,6 +10,7 @@ public class CellController : UnitController
     SensorController sensors;
     Rigidbody2D rb;
     MovementController mc;
+    NeatGenome genome;
 
     private void Start()
     {
@@ -16,6 +18,16 @@ public class CellController : UnitController
         sensors = GetComponent<SensorController>();
         rb = GetComponent<Rigidbody2D>();
         mc = GetComponent<MovementController>();
+    }
+
+    public void SetGenome(NeatGenome genome)
+    {
+        this.genome = genome;
+    }
+
+    public NeatGenome GetGenome()
+    {
+        return genome;
     }
 
     public override float GetFitness()

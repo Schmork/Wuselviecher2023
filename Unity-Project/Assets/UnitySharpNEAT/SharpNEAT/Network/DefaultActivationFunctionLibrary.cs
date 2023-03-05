@@ -104,8 +104,10 @@ namespace SharpNeat.Network
         /// </summary>
         public static IActivationFunctionLibrary CreateLibraryNeat(IActivationFunction activationFn)
         {
-            List<ActivationFunctionInfo> fnList = new List<ActivationFunctionInfo>(1);
-            fnList.Add(new ActivationFunctionInfo(0, 1.0, activationFn));
+            List<ActivationFunctionInfo> fnList = new List<ActivationFunctionInfo>(1)
+            {
+                new ActivationFunctionInfo(0, 1.0, activationFn)
+            };
             return new DefaultActivationFunctionLibrary(fnList);
         }
 
@@ -114,11 +116,13 @@ namespace SharpNeat.Network
         /// </summary>
         public static IActivationFunctionLibrary CreateLibraryCppn()
         {
-            List<ActivationFunctionInfo> fnList = new List<ActivationFunctionInfo>(4);
-            fnList.Add(new ActivationFunctionInfo(0, 0.25, Linear.__DefaultInstance));
-            fnList.Add(new ActivationFunctionInfo(1, 0.25, BipolarSigmoid.__DefaultInstance));
-            fnList.Add(new ActivationFunctionInfo(2, 0.25, Gaussian.__DefaultInstance));
-            fnList.Add(new ActivationFunctionInfo(3, 0.25, Sine.__DefaultInstance));
+            List<ActivationFunctionInfo> fnList = new List<ActivationFunctionInfo>(4)
+            {
+                new ActivationFunctionInfo(0, 0.25, Linear.__DefaultInstance),
+                new ActivationFunctionInfo(1, 0.25, BipolarSigmoid.__DefaultInstance),
+                new ActivationFunctionInfo(2, 0.25, Gaussian.__DefaultInstance),
+                new ActivationFunctionInfo(3, 0.25, Sine.__DefaultInstance)
+            };
             return new DefaultActivationFunctionLibrary(fnList);
         }
 
@@ -127,9 +131,11 @@ namespace SharpNeat.Network
         /// </summary>
         public static IActivationFunctionLibrary CreateLibraryRbf(IActivationFunction activationFn, double auxArgsMutationSigmaCenter, double auxArgsMutationSigmaRadius)
         {
-            List<ActivationFunctionInfo> fnList = new List<ActivationFunctionInfo>(2);
-            fnList.Add(new ActivationFunctionInfo(0, 0.8, activationFn));
-            fnList.Add(new ActivationFunctionInfo(1, 0.2, new RbfGaussian(auxArgsMutationSigmaCenter, auxArgsMutationSigmaRadius)));
+            List<ActivationFunctionInfo> fnList = new List<ActivationFunctionInfo>(2)
+            {
+                new ActivationFunctionInfo(0, 0.8, activationFn),
+                new ActivationFunctionInfo(1, 0.2, new RbfGaussian(auxArgsMutationSigmaCenter, auxArgsMutationSigmaRadius))
+            };
             return new DefaultActivationFunctionLibrary(fnList);
         }
 

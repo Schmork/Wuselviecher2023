@@ -198,8 +198,8 @@ namespace SharpNeat.EvolutionAlgorithms
         private void NormalizeProportions()
         {
             double total = _offspringAsexualProportion + _offspringSexualProportion;
-            _offspringAsexualProportion = _offspringAsexualProportion / total;
-            _offspringSexualProportion = _offspringSexualProportion / total;
+            _offspringAsexualProportion /= total;
+            _offspringSexualProportion /= total;
         }
 
         #endregion
@@ -215,9 +215,11 @@ namespace SharpNeat.EvolutionAlgorithms
             // Make a copy of the current 'complexifying' parameters (as required by complexity regulation)
             // and modify the copy to be suitable for simplifcation. Basically we disable sexual reproduction
             // whle in simplifying mode to prevent proliferation of structure through sexual reproduction.
-            NeatEvolutionAlgorithmParameters eaParams = new NeatEvolutionAlgorithmParameters(this);
-            eaParams._offspringAsexualProportion = 1.0;
-            eaParams._offspringSexualProportion = 0.0;
+            NeatEvolutionAlgorithmParameters eaParams = new NeatEvolutionAlgorithmParameters(this)
+            {
+                _offspringAsexualProportion = 1.0,
+                _offspringSexualProportion = 0.0
+            };
             return eaParams;
         }
 

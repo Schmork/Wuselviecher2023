@@ -1,4 +1,5 @@
 using UnityEngine;
+using SharpNeat.Core;
 
 public class SizeController : MonoBehaviour
 {
@@ -40,6 +41,8 @@ public class SizeController : MonoBehaviour
     private void Die()
     {
         var stats = GetComponent<StatsCollector>();
+        var genome = GetComponent<CellController>().GetGenome();
+        stats.AddToValhalla(genome);
         //if (stats != null) stats.AddToValhalla(GetComponent<CellController>().Brain);
         Destroy(gameObject);
     }
