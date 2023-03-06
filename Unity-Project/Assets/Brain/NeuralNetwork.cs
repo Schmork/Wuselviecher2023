@@ -1,22 +1,32 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
-[Serializable]
-public class NeuralNetwork : ICloneable
+[System.Serializable]
+public class NeuralNetwork : System.ICloneable
 {
-    static readonly int memNeurons = 5;
+    static readonly int memNeurons = SensorController.numSensorValues / 2;
     public List<Layer> Layers;
     public int[] memNeuronLayer = new int[memNeurons];
     public int[] memNeuronIndex = new int[memNeurons];
 
     public NeuralNetwork()
     {
-        Layers = new List<Layer>() { new Layer(20, 0, ActivationFunction.Input) };
-        AddLayer(11);
-        AddLayer(2);
+        var numInputs = 3 + memNeurons + SensorController.numSensorValues;
+        var numOutputs = 2;
 
-        Layers[^1].NeuronFunction[0] = ActivationFunction.TanH;
-        Layers[^1].NeuronFunction[1] = ActivationFunction.Sigmoid;
+        Layers = new List<Layer>() { new Layer(numInputs, 0, ActivationFunction.Input) };
+        /*
+        var numHidden1 = (numInputs + numOutputs) * 2 / 3;
+        var numHidden2 = numHidden1 / 2;
+        AddLayer(numHidden1);
+        AddLayer(numHidden2);
+        */
+        AddLayer((numInputs + numOutputs) / 2);
+        AddLayer(numOutputs);
+
+        Layers[^1].NeuronFunctions[0] = ActivationFunction.TanH;
+        Layers[^1].NeuronFunctions[1] = ActivationFunction.Sigmoid;
 
         for (int i = 0; i < memNeuronLayer.Length; i++)
         {
@@ -32,33 +42,79 @@ public class NeuralNetwork : ICloneable
     public NeuralNetwork(NeuralNetwork parent, float mutation = 0.01f)
     {
         Layers = new List<Layer>();
-        foreach (var layer in parent.Layers)
+        foreach (var parentLayer in parent.Layers)
         {
-            var newLayer = new Layer(layer.Weights, layer.NeuronBias, layer.NeuronFunction);
-            var inputSize = layer.Weights.Length / layer.NeuronBias.Length;
-            for (int i = 0; i < newLayer.NeuronBias.Length; i++)
-            {
-                newLayer.NeuronBias[i] += UnityEngine.Random.Range(-mutation, mutation);
-                for (int j = 0; j < inputSize; j++)
-                {
-                    newLayer.Weights[i * inputSize + j] += UnityEngine.Random.Range(-mutation, mutation);
-                }
-            }
-            Layers.Add(newLayer);
+            Layers.Add(parentLayer.Clone() as Layer);
         }
-        memNeuronLayer = (int[])parent.memNeuronLayer.Clone();
-        memNeuronIndex = (int[])parent.memNeuronIndex.Clone();
+        memNeuronLayer = parent.memNeuronLayer.Clone() as int[];
+        memNeuronIndex = parent.memNeuronIndex.Clone() as int[];
 
-        for (int i = 0; i < memNeuronLayer.Length; i++)
+        Mutate(mutation);
+    }
+
+    enum MutationType
+    {
+        BIAS,
+        WEIGHT,
+        FUNCTION,
+        MEMORY
+    }
+
+    readonly Dictionary<MutationType, int> mutations = new Dictionary<MutationType, int>()
+    {
+        { MutationType.BIAS, 10 },
+        { MutationType.WEIGHT, 40 },
+        { MutationType.FUNCTION, 1 },
+        { MutationType.MEMORY, 3 }
+    };
+
+    void Mutate(float mutation)
+    {
+        var totalWeight = mutations.Values.Sum();
+        var random = (int)Random.value * totalWeight;
+        var mutationType = MutationType.WEIGHT;
+        var sum = 0;
+        foreach (var mut in mutations)
         {
-            if (WorldConfig.Random.NextDouble() < mutation)
+            sum += mut.Value;
+            if (sum > random)
+            {
+                mutationType = mut.Key;
+                break;
+            }
+        }
+
+        int i;
+        Layer layer;
+        switch (mutationType)
+        {
+            case MutationType.BIAS:
+                layer = Layers[Random.Range(0, Layers.Count)];
+                i = Random.Range(0, layer.NeuronBias.Length);
+                layer.NeuronBias[i] += Random.Range(-mutation, mutation);
+                break;
+            case MutationType.WEIGHT:
+                layer = Layers[Random.Range(1, Layers.Count)];
+                i = Random.Range(0, layer.Weights.Length);
+                layer.Weights[i] += Random.Range(-mutation, mutation);
+                break;
+            case MutationType.FUNCTION:
+                layer = Layers[Random.Range(1, Layers.Count - 1)];
+                i = Random.Range(0, layer.NeuronFunctions.Length);
+                layer.NeuronFunctions[i] = Layer.RandomFunction();
+                break;
+            case MutationType.MEMORY:
+                i = Random.Range(0, memNeuronIndex.Length);
                 RandomMemory(i);
+                break;
+            default:
+                break;
         }
     }
 
     void RandomMemory(int i)
     {
-        var layer = WorldConfig.Random.Next(1, Layers.Count - 2);   // avoid input layer due to funky values
+        var layer = WorldConfig.Random.Next(1, Layers.Count);
         var index = WorldConfig.Random.Next(0, Layers[layer].NeuronBias.Length);
         memNeuronLayer[i] = layer;
         memNeuronIndex[i] = index;

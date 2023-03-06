@@ -2863,14 +2863,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Valhalla: {fileID: 11400000, guid: 810b57c9ca5401842906cb74dace35a0, type: 2}
-  ValhallaMutation: 0.015
+  ValhallaMutation: 0.5
   DecayScoreTimes: {x: 1.5, y: 1}
-  WorldMinMass: 800
+  WorldMinMass: 400
   CellPrefab: {fileID: 4899608772384843270, guid: 1e92a15f946344b47b31278ad92ac86a, type: 3}
   CellSpawnTimes: {x: 0.1, y: 1}
-  CellSpawnRadius: 30
-  FoodPrefab: {fileID: 2340250705056949155, guid: a47f140591fd66f4f89ce92dc592cd21, type: 3}
-  FoodSpawnTimes: {x: 0.3, y: 1}
+  CellSpawnRadius: 25
 --- !u!114 &413936425
 MonoBehaviour:
   m_ObjectHideFlags: 0

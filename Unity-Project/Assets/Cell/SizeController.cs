@@ -10,6 +10,7 @@ public class SizeController : MonoBehaviour
         get { return size; }
         set
         {
+            //Debug.Log("Size: " + value);
             if (value < WorldConfig.Instance.DeathBelowSize)
             {
                 Die();
@@ -30,6 +31,7 @@ public class SizeController : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        if (Size <= 0.01f) Die();
     }
 
     private void Update()

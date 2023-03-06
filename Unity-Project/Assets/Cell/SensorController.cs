@@ -9,81 +9,112 @@ public class SensorController : MonoBehaviour
     readonly float rectWidth = 1f;
     readonly float rectLength = 9f;
 
+    readonly static int numTrackedCellsPerSensor = 7;
+    readonly public static int numSensorValues = /*2 **/ numTrackedCellsPerSensor * 3;     // numSensors * numTracked * numValues
+
     // returns 12 resulting floats
     public float[] Scan()
     {
-        var origin = (Vector2)transform.position;
-        var halfExtents = new Vector2(rectWidth / 2.0f, rectLength / 2.0f) * transform.localScale.magnitude;
-        var ahead = Physics2D.OverlapAreaAll(origin - halfExtents, origin + halfExtents);
+        //var origin = (Vector2)transform.position;
+        //var halfExtents = new Vector2(rectWidth / 2.0f, rectLength / 2.0f) * transform.localScale.magnitude;
+        //var ahead = Physics2D.OverlapAreaAll(origin - halfExtents, origin + halfExtents);
         var around = Physics2D.OverlapCircleAll(transform.position, circleDetectionRadius * transform.localScale.magnitude);
 
-        var results = ParseHits(ahead);
-        results.AddRange(ParseHits(around));
+        //var results = ParseHits(ahead);
+        //results.AddRange(ParseHits(around));
+        var results = ParseHits(around);
         return results.ToArray();
+    }
+
+    struct Trans
+    {
+        public Vector3 position;
+        public Quaternion rotation;
+        public Vector3 localScale;
+
+        public Trans(Transform trans)
+        {
+            position = trans.position;
+            rotation = trans.rotation;
+            localScale = trans.localScale;
+        }
     }
 
     // returns 6 resulting floats
     private List<float> ParseHits(Collider2D[] hits)
     {
-        float minDistSqrBig = Mathf.Infinity;
-        float distSqrSmall;
-        Transform nextBiggerCell = null;
-        Transform nextSmallerCell = null;
+        var nullTrans = new Trans
+        {
+            position = Vector3.zero,
+            rotation = Quaternion.identity,
+            localScale = Vector3.zero
+        };
+
+        var biggerQueue = new SortedList<float, Trans>();
+        var smallerQueue = new SortedList<float, Trans>();
+
+        for (int i = 0; i < numTrackedCellsPerSensor; i++)
+        {
+            biggerQueue.Add(i / 1000f, nullTrans);
+            smallerQueue.Add(i / 1000f, nullTrans);
+        }
 
         var results = new List<float>();
         foreach (var hit in hits)
         {
             if (!hit.gameObject.CompareTag("Edible") || hit.gameObject == gameObject) continue;
 
+            var myScale = transform.localScale.x;
+            var hitScale = hit.transform.localScale.x;
+
             // find smaller
-            if (hit.transform.localScale.x < transform.localScale.x * circleSizeComparisonSafety)
+            if (hitScale < myScale * circleSizeComparisonSafety)
             {
-                //float distSqr = (hit.transform.position - transform.position).sqrMagnitude;
-                if (nextSmallerCell == null || hit.transform.localScale.x > nextSmallerCell.localScale.x)
+                if (hitScale > smallerQueue.Values[0].localScale.x)
                 {
-                    distSqrSmall = Vector2.Distance(transform.position, FuturePosition(hit.transform));
-                    nextSmallerCell = hit.transform;
+                    while (smallerQueue.ContainsKey(hitScale)) hitScale += 0.000001f;
+                    smallerQueue.RemoveAt(0);
+                    smallerQueue.Add(hitScale, new Trans(hit.transform));
                 }
             }
 
             // find bigger
-            if (hit.transform.localScale.x > transform.localScale.x * circleSizeComparisonSafety)
+            if (hitScale > myScale * circleSizeComparisonSafety)
             {
-                float distSqr = Vector2.Distance(transform.position, FuturePosition(hit.transform));
-                //float distSqr = (hit.transform.position - transform.position).sqrMagnitude;
-                if (distSqr < minDistSqrBig)
+                if (hitScale > biggerQueue.Values[0].localScale.x)
                 {
-                    minDistSqrBig = distSqr;
-                    nextBiggerCell = hit.transform;
+                    while (biggerQueue.ContainsKey(hitScale)) hitScale += 0.000001f;
+                    biggerQueue.RemoveAt(0);
+                    biggerQueue.Add(hitScale, new Trans(hit.transform));
                 }
             }
         }
-        results.AddRange(ParseCell(nextSmallerCell));
-        results.AddRange(ParseCell(nextBiggerCell));
+
+        foreach (var item in smallerQueue)
+        {
+            results.AddRange(ParseCell(item.Value));
+        }
+        foreach (var item in biggerQueue)
+        {
+            results.AddRange(ParseCell(item.Value));
+        }
         return results;
     }
 
-    Vector2 FuturePosition(Transform other)
+    Vector2 FuturePosition(Vector3 otherPos)
     {
-        float distance = Vector2.Distance(transform.position, other.transform.position);
+        float distance = Vector2.Distance(transform.position, otherPos);
         float timeToTarget = distance / (GetComponent<Rigidbody2D>().velocity.magnitude + 0.01f) * Time.deltaTime;
-        return (Vector2)other.transform.position + GetComponent<Rigidbody2D>().velocity * timeToTarget;
+        return (Vector2)otherPos + GetComponent<Rigidbody2D>().velocity * timeToTarget;
     }
 
-    float[] ParseCell(Transform other)
+    float[] ParseCell(Trans other)
     {
         var results = new float[3];
-        if (other == null) return results;
-        var futurePos = FuturePosition(other);
-        results[0] = other.transform.localScale.x / transform.localScale.x / 100f;
+        var futurePos = other.position;// FuturePosition(other.position);
+        results[0] = other.localScale.x / transform.localScale.x / 100f;
         results[1] = Vector2.Distance(transform.position, futurePos);
         results[2] = Vector2.SignedAngle(transform.up, futurePos) / 180f;
-        /*
-        results[1] = Vector2.Distance(transform.position, other.transform.position)
-            / circleDetectionRadius * transform.localScale.magnitude;
-        results[2] = Vector2.SignedAngle(transform.up, other.transform.position - transform.position) / 180f;
-        */
-        //Debug.Log(results[0] + " | " + results[1] + " | " + results[2]);
         return results;
     }
 }

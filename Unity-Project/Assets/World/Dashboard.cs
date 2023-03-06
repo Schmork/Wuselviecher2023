@@ -55,9 +55,12 @@ public class Dashboard : MonoBehaviour
         _decaySlider = decaySlider;
 
         var time = PlayerPrefs.GetString("sim speed");
-        if (float.TryParse(time, NumberStyles.Float, CultureInfo.InvariantCulture, out float result))
-            Time.timeScale = result;
+        if (float.TryParse(time, NumberStyles.Float, CultureInfo.InvariantCulture, out float resultTime))
+            Time.timeScale = resultTime;
         speedSlider.value = Time.timeScale;
+        var decay = PlayerPrefs.GetString("decay");
+        if (float.TryParse(decay, NumberStyles.Float, CultureInfo.InvariantCulture, out float resultDecay))
+            decaySlider.value = resultDecay;
 
         vhDistanceTravelled.value = PlayerPrefs.GetFloat("chance" + Valhalla.Metric.DistanceTravelled.ToString());
         vhMassEaten.value = PlayerPrefs.GetFloat("chance" + Valhalla.Metric.MassEaten.ToString());
@@ -123,14 +126,15 @@ public class Dashboard : MonoBehaviour
         PlayerPrefs.SetString("sim speed", value.ToString(CultureInfo.InvariantCulture));
     }
 
-    private static float CalcDecay(float sliderValue)
+    private static float CalcDecay(float value)
     {
-        return Mathf.Pow(10, -sliderValue + 1);
+        return Mathf.Pow(10, -value + 1);
     }
 
     public void OnDecayChanged(float value)
     {
         decayValue.text = CalcDecay(value).ToString("F7");
+        PlayerPrefs.SetString("decay", value.ToString(CultureInfo.InvariantCulture));
     }
 
     public static float GetDecay()

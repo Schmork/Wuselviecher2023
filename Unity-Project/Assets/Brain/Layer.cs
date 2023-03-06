@@ -3,43 +3,59 @@
 [Serializable]
 public class Layer : ICloneable
 {
-    public ActivationFunction[] NeuronFunction;
+    public ActivationFunction[] NeuronFunctions;
     public float[] NeuronBias;
     public float[] PrevOutput;
     public float[] Weights;
+    static readonly float initial = 30f;
 
-    public Layer(int neuronCount, int inputSize, ActivationFunction? function = null)
+    public static ActivationFunction RandomFunction()
     {
-        NeuronFunction = new ActivationFunction[neuronCount];
+        var functions = Enum.GetValues(typeof(ActivationFunction)) as ActivationFunction[];
+        var randomIndex = WorldConfig.Random.Next(functions.Length - 1);
+        return functions[randomIndex + 1];
+    }
+
+    static float RandomInitialValue()
+    {
+        return (float)WorldConfig.Random.NextDouble() * initial - initial / 2f;
+    }
+
+    public Layer(int neuronCount, int inputLength, ActivationFunction? function = null)
+    {
+        NeuronFunctions = new ActivationFunction[neuronCount];
         NeuronBias = new float[neuronCount];
         PrevOutput = new float[neuronCount];
-        Weights = new float[neuronCount * inputSize];
+        Weights = new float[neuronCount * inputLength];
+        //UnityEngine.Debug.Log("new Layer (" + neuronCount + ", " + inputLength + "), " + Weights.Length + " weights");
 
         for (int i = 0; i < neuronCount; i++)
         {
-            NeuronBias[i] = (float)WorldConfig.Random.NextDouble() * 2f - 1f;
-            if (function == null)
-            {
-                NeuronFunction[i] = WorldConfig.Random.Next(2) == 0 ? ActivationFunction.Sigmoid : ActivationFunction.TanH;
-            }
-            else
-            {
-                NeuronFunction[i] = (ActivationFunction)function;
-            }
+            NeuronBias[i] = RandomInitialValue();
+            NeuronFunctions[i] = function == null ? RandomFunction() : (ActivationFunction)function;
 
-            for (int j = 0; j < inputSize; j++)
+            for (int j = 0; j < inputLength; j++)
             {
-                Weights[i * inputSize + j] = (float)WorldConfig.Random.NextDouble() * 2f - 1f;
+                //UnityEngine.Debug.Log("i, j: " + i + ", " + j + ", i * neuronCount + j = " + (i * inputLength + j) + ", max: " + Weights.Length);
+                Weights[i * inputLength + j] = RandomInitialValue();
             }
         }
     }
 
     public Layer(float[] weights, float[] neuronBias, ActivationFunction[] neuronFunction)
     {
-        NeuronFunction = neuronFunction;
+        NeuronFunctions = neuronFunction;
         NeuronBias = neuronBias;
         PrevOutput = new float[neuronBias.Length];
         Weights = weights;
+    }
+
+    public object Clone()
+    {
+        var newWeights = Weights.Clone() as float[];
+        var newNeurons = NeuronBias.Clone() as float[];
+        var newFunctions = NeuronFunctions.Clone() as ActivationFunction[];
+        return new Layer(newWeights, newNeurons, newFunctions);
     }
 
     public float[] FeedForward(float[] input)
@@ -48,31 +64,27 @@ public class Layer : ICloneable
 
         for (int i = 0; i < NeuronBias.Length; i++)
         {
+            PrevOutput[i] = output[i];
+
             float sum = 0f;
-            if (NeuronFunction[i] == ActivationFunction.Input)
+            if (NeuronFunctions[i] == ActivationFunction.Input)
             {
-                output[i] = Activation.Evaluate(NeuronFunction[i], NeuronBias[i] * input[i]);
+                output[i] = Activation.Evaluate(NeuronFunctions[i], NeuronBias[i] * input[i]);
             }
             else
             {
-
                 for (int j = 0; j < input.Length; j++)
                 {
-                    sum += Weights[i * input.Length + j] * input[j];
+                    var x = i * input.Length + j;
+                    if (x >= Weights.Length)
+                        UnityEngine.Debug.Log("i, j: " + i + ", " + j + ", i * input.Length + j = " + x + ", max: " + Weights.Length);
+                    sum += Weights[x] * input[j];
                 }
-                output[i] = Activation.Evaluate(NeuronFunction[i], NeuronBias[i] * sum);
+                output[i] = Activation.Evaluate(NeuronFunctions[i], NeuronBias[i] * sum);
+                //if (float.IsNaN(output[i])) UnityEngine.Debug.Log(NeuronFunctions[i]);
             }
-            PrevOutput[i] = output[i];
         }
 
         return output;
-    }
-
-    public object Clone()
-    {
-        var newWeights = (float[])Weights.Clone();
-        var newNeurons = (float[])NeuronBias.Clone();
-        var newFunctions = (ActivationFunction[])NeuronFunction.Clone();
-        return new Layer(newWeights, newNeurons, newFunctions);
     }
 }

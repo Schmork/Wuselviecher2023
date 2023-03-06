@@ -12,14 +12,8 @@ public class WorldController : MonoBehaviour
     [SerializeField] Vector2 CellSpawnTimes;
     [SerializeField] float CellSpawnRadius;
 
-    [SerializeField] GameObject FoodPrefab;
-    [SerializeField] Vector2 FoodSpawnTimes;
-
-    public static System.Collections.Generic.List<long> spans;
-
     void Start()
     {
-        spans = new System.Collections.Generic.List<long>() { 100 };
         Valhalla.RefreshDashboard();
         InvokeRepeating(nameof(Spawn), CellSpawnTimes.x, CellSpawnTimes.y);
         //InvokeRepeating(nameof(Food), FoodSpawnTimes.x, FoodSpawnTimes.y);
@@ -33,13 +27,12 @@ public class WorldController : MonoBehaviour
 
     void Spawn()
     {
-        Debug.Log(spans.Average());
-
         int n = 0;
         var existingCells = FindObjectsOfType<MovementController>();
         while (n++ < 7 && existingCells.Sum(cell => cell.GetComponent<SizeController>().Size) < WorldMinMass)
         {
-            var pos = transform.position + (Vector3)Random.insideUnitCircle * CellSpawnRadius;
+            var which = Random.Range(-1, 2) * transform.right * CellSpawnRadius * 2.7f;
+            var pos = which + transform.position + (Vector3)Random.insideUnitCircle * CellSpawnRadius;
             var randomZRotation = Quaternion.Euler(0, 0, Random.Range(0f, 360f));
 
             foreach (var other in existingCells)
@@ -64,26 +57,8 @@ public class WorldController : MonoBehaviour
             var hero = Valhalla.GetRandomHero();
             if (Random.value < 0.95 && hero != null)
                 mc.SetBrain(new NeuralNetwork(hero, ValhallaMutation));
-            if (mc.Brain == null)
+            else 
                 mc.SetBrain(new NeuralNetwork());
-        }
-    }
-
-    void Food()
-    {
-        for (int i = 0; i < 20; i++)
-        {
-            var pos = transform.position + (Vector3)Random.insideUnitCircle * CellSpawnRadius * 4f;
-            var food = Instantiate(FoodPrefab, pos, Quaternion.identity, transform);
-            food.GetComponent<SpriteRenderer>().material.color =
-                Random.ColorHSV(
-                0, 1,
-                0.6f, 1,
-                0.6f, 1,
-                1, 1);
-            food.GetComponent<SizeController>().Size = Random.Range(
-                WorldConfig.Instance.FoodSizeMin,
-                WorldConfig.Instance.FoodSizeMax);
         }
     }
 }
