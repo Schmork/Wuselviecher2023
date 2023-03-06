@@ -124,7 +124,7 @@ public class Valhalla : ScriptableObject
         var cells = FindObjectsOfType<SizeController>();
         for (int i = 0; i < cells.Length; i++)
         {
-            Destroy(cells[i].gameObject);
+            cells[i].gameObject.SetActive(false);
         }
     }
 

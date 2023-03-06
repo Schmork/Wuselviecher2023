@@ -3,25 +3,15 @@ using UnityEngine;
 
 public class SensorController : MonoBehaviour
 {
-    readonly float circleDetectionRadius = 12f;
-    readonly float circleSizeComparisonSafety = 0.9f; // reduce own size in comparisons as safety margin
+    const float circleDetectionRadius = 12f;
+    const float circleSizeComparisonSafety = 0.9f; // reduce own size in comparisons as safety margin
 
-    readonly float rectWidth = 1f;
-    readonly float rectLength = 9f;
+    static readonly int numTrackedCellsPerSensor = 7;
+    public static readonly int numSensorValues = numTrackedCellsPerSensor * 3 * 2;     // numTracked * numValues (for both big & small)
 
-    readonly static int numTrackedCellsPerSensor = 7;
-    readonly public static int numSensorValues = /*2 **/ numTrackedCellsPerSensor * 3;     // numSensors * numTracked * numValues
-
-    // returns 12 resulting floats
     public float[] Scan()
     {
-        //var origin = (Vector2)transform.position;
-        //var halfExtents = new Vector2(rectWidth / 2.0f, rectLength / 2.0f) * transform.localScale.magnitude;
-        //var ahead = Physics2D.OverlapAreaAll(origin - halfExtents, origin + halfExtents);
         var around = Physics2D.OverlapCircleAll(transform.position, circleDetectionRadius * transform.localScale.magnitude);
-
-        //var results = ParseHits(ahead);
-        //results.AddRange(ParseHits(around));
         var results = ParseHits(around);
         return results.ToArray();
     }
@@ -40,7 +30,6 @@ public class SensorController : MonoBehaviour
         }
     }
 
-    // returns 6 resulting floats
     private List<float> ParseHits(Collider2D[] hits)
     {
         var nullTrans = new Trans
@@ -60,8 +49,9 @@ public class SensorController : MonoBehaviour
         }
 
         var results = new List<float>();
-        foreach (var hit in hits)
+        for (int i = 0; i < hits.Length; i++)
         {
+            Collider2D hit = hits[i];
             if (!hit.gameObject.CompareTag("Edible") || hit.gameObject == gameObject) continue;
 
             var myScale = transform.localScale.x;
@@ -101,17 +91,10 @@ public class SensorController : MonoBehaviour
         return results;
     }
 
-    Vector2 FuturePosition(Vector3 otherPos)
-    {
-        float distance = Vector2.Distance(transform.position, otherPos);
-        float timeToTarget = distance / (GetComponent<Rigidbody2D>().velocity.magnitude + 0.01f) * Time.deltaTime;
-        return (Vector2)otherPos + GetComponent<Rigidbody2D>().velocity * timeToTarget;
-    }
-
     float[] ParseCell(Trans other)
     {
         var results = new float[3];
-        var futurePos = other.position;// FuturePosition(other.position);
+        var futurePos = other.position;
         results[0] = other.localScale.x / transform.localScale.x / 100f;
         results[1] = Vector2.Distance(transform.position, futurePos);
         results[2] = Vector2.SignedAngle(transform.up, futurePos) / 180f;

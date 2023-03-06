@@ -10,7 +10,6 @@ public class SizeController : MonoBehaviour
         get { return size; }
         set
         {
-            //Debug.Log("Size: " + value);
             if (value < WorldConfig.Instance.DeathBelowSize)
             {
                 Die();
@@ -43,6 +42,6 @@ public class SizeController : MonoBehaviour
     {
         var stats = GetComponent<StatsCollector>();
         if (stats != null) stats.AddToValhalla(GetComponent<MovementController>().Brain);
-        Destroy(gameObject);
+        gameObject.SetActive(false);
     }
 }

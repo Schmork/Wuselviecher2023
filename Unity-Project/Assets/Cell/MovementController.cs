@@ -7,6 +7,7 @@ public class MovementController : MonoBehaviour
     SensorController sensors;
     Rigidbody2D rb;
     StatsCollector stats;
+    float[] inputs;
 
     public NeuralNetwork Brain
     {
@@ -21,6 +22,7 @@ public class MovementController : MonoBehaviour
 
     private void Start()
     {
+        inputs = new float[3 + Brain.memNeuronIndex.Length + SensorController.numSensorValues];
         sc = GetComponent<SizeController>();
         sensors = GetComponent<SensorController>();
         rb = GetComponent<Rigidbody2D>();
@@ -28,49 +30,28 @@ public class MovementController : MonoBehaviour
         stats.TimeSpawned = Time.time;
     }
 
-    static float maxSize = 0;
-    static float maxSpeed = 0;
-    static float maxAngular = 0;
-
     void Update()
     {
         if (rb.velocity.magnitude > stats.FastestSpeedAchieved) stats.FastestSpeedAchieved = rb.velocity.magnitude;
         stats.DistanceTravelled += rb.velocity.magnitude / sc.Size * Time.deltaTime;
 
-        var inputList = new List<float> { sc.Size / 100f, rb.velocity.magnitude / 10f, System.MathF.Tanh(rb.angularVelocity / 900f) };
-
-        var hasChanged = false;
-        if (sc.Size > maxSize)
-        {
-            maxSize = sc.Size;
-            hasChanged = true;
-        }
-        if (rb.velocity.magnitude > maxSpeed)
-        {
-            maxSpeed = rb.velocity.magnitude;
-            hasChanged = true;
-        }
-        if (Mathf.Abs(rb.angularVelocity) > maxAngular)
-        {
-            maxAngular = Mathf.Abs(rb.angularVelocity);
-            hasChanged = true;
-        }
-        //if (hasChanged) Debug.Log("Max Size: " + maxSize + "  Max Speed: " + maxSpeed + "  Max Angular: " + maxAngular);
-
+        int n = 0;
+        inputs[n++] = sc.Size / 100f;
+        inputs[n++] = rb.velocity.magnitude / 10f;
+        inputs[n++] = System.MathF.Tanh(rb.angularVelocity / 900f);
 
         for (int i = 0; i < Brain.memNeuronIndex.Length; i++)
         {
-            var layer = Brain.memNeuronLayer[i];
-            var neuron = Brain.memNeuronIndex[i];
-            inputList.Add(Brain.Layers[layer].PrevOutput[neuron]);
+            inputs[n++] = Brain.Layers[Brain.memNeuronLayer[i]].PrevOutput[Brain.memNeuronIndex[i]];
         }
 
-        inputList.AddRange(sensors.Scan());
+        float[] data = sensors.Scan();
+        for (int i = 0; i < data.Length; i++)
+        {
+            inputs[n++] = data[i];
+        }
 
-        var actions = Brain.FeedForward(inputList.ToArray());
-
-        if (float.IsNaN(actions[0])) Debug.Log("0");
-        if (float.IsNaN(actions[1])) Debug.Log("1");
+        var actions = Brain.FeedForward(inputs);
 
         var torque = 1500f / Mathf.Pow(sc.Size + 1, 0.6f);// / (Mathf.Abs(rb.angularVelocity) + 0.0001f);
         var thrust = 250f * sc.Size;
@@ -79,7 +60,7 @@ public class MovementController : MonoBehaviour
         if (actions[1] > 0.01) stats.ActionsTaken++;
 
         sc.Size -= Mathf.Abs(actions[0]) * sc.Size * Time.deltaTime / 8f / Mathf.Sqrt(rb.velocity.magnitude + 1);
-        sc.Size -= Mathf.Abs(actions[1]) * sc.Size * Time.deltaTime / 800f;
+        sc.Size -= Mathf.Abs(actions[1]) * sc.Size * Time.deltaTime / 1500f;
 
         if (actions[1] < 0) return;
 

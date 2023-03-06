@@ -8,8 +8,8 @@ public enum ActivationFunction
     TanH,
     Gaussian,
     InverseSquare,
-    //Exponential,
-    Sine
+    Sine,
+    Identity
 }
 
 public static class Activation
@@ -23,8 +23,8 @@ public static class Activation
             ActivationFunction.TanH => (float)Math.Tanh(x),
             ActivationFunction.Gaussian => Mathf.Exp(-(x * x)),
             ActivationFunction.InverseSquare => 1 / (x * x + 1),
-            //ActivationFunction.Exponential => MathF.Exp(x),
             ActivationFunction.Sine => MathF.Sin(x),
+            ActivationFunction.Identity => x,
             _ => throw new ArgumentException("Unknown activation function"),
         };
     }

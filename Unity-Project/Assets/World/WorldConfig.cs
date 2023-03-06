@@ -49,33 +49,11 @@ public class WorldConfig : MonoBehaviour
         set { cellSizeMax = value; }
     }
 
-    [SerializeField] private float mother2ChildRatio;
-
-    public float Mother2ChildRatio
-    {
-        get { return mother2ChildRatio; }
-        set { mother2ChildRatio = value; }
-    }
-
     [SerializeField] private float deathBelowSize;
 
     public float DeathBelowSize
     {
         get { return deathBelowSize; }
         set { deathBelowSize = value; }
-    }
-
-    [SerializeField] private float foodSizeMin;
-    public float FoodSizeMin
-    {
-        get { return foodSizeMin; }
-        set { foodSizeMin = value; }
-    }
-
-    [SerializeField] private float foodSizeMax;
-    public float FoodSizeMax
-    {
-        get { return foodSizeMax; }
-        set { foodSizeMax = value; }
     }
 }

@@ -16,13 +16,13 @@ public class NeuralNetwork : System.ICloneable
         var numOutputs = 2;
 
         Layers = new List<Layer>() { new Layer(numInputs, 0, ActivationFunction.Input) };
-        /*
+        
         var numHidden1 = (numInputs + numOutputs) * 2 / 3;
         var numHidden2 = numHidden1 / 2;
         AddLayer(numHidden1);
         AddLayer(numHidden2);
-        */
-        AddLayer((numInputs + numOutputs) / 2);
+        
+        //AddLayer((numInputs + numOutputs) / 2);
         AddLayer(numOutputs);
 
         Layers[^1].NeuronFunctions[0] = ActivationFunction.TanH;
@@ -42,9 +42,9 @@ public class NeuralNetwork : System.ICloneable
     public NeuralNetwork(NeuralNetwork parent, float mutation = 0.01f)
     {
         Layers = new List<Layer>();
-        foreach (var parentLayer in parent.Layers)
+        for (int i = 0; i < parent.Layers.Count; i++)
         {
-            Layers.Add(parentLayer.Clone() as Layer);
+            Layers.Add(parent.Layers[i].Clone() as Layer);
         }
         memNeuronLayer = parent.memNeuronLayer.Clone() as int[];
         memNeuronIndex = parent.memNeuronIndex.Clone() as int[];
@@ -123,9 +123,9 @@ public class NeuralNetwork : System.ICloneable
     public float[] FeedForward(float[] input)
     {
         var result = input;
-        foreach (var layer in Layers)
+        for (int i = 0; i < Layers.Count; i++)
         {
-            result = layer.FeedForward(result);
+            result = Layers[i].FeedForward(result);
         }
         return result;
     }
@@ -133,9 +133,9 @@ public class NeuralNetwork : System.ICloneable
     public object Clone()
     {
         NeuralNetwork clone = new NeuralNetwork();
-        foreach (var layer in Layers)
+        for (int i = 0; i < Layers.Count; i++)
         {
-            clone.Layers.Add(layer.Clone() as Layer);
+            clone.Layers.Add(Layers[i].Clone() as Layer);
         }
         return clone;
     }
