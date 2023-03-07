@@ -6,6 +6,7 @@ using UnityEngine;
 public class NeuralNetwork : System.ICloneable
 {
     public List<Layer> Layers;
+    public int generation;
 
     public NeuralNetwork()
     {
@@ -23,6 +24,8 @@ public class NeuralNetwork : System.ICloneable
 
         Layers[^1].NeuronFunctions[0] = ActivationFunction.TanH;
         Layers[^1].NeuronFunctions[1] = ActivationFunction.Sigmoid;
+
+        generation = 0;
     }
 
     private void AddLayer(int numNeurons, ActivationFunction? function = null)
@@ -38,6 +41,7 @@ public class NeuralNetwork : System.ICloneable
             Layers.Add(parent.Layers[i].Clone() as Layer);
         }
         Mutate(mutation);
+        generation = parent.generation + 1;
     }
 
     enum MutationType

@@ -21,12 +21,14 @@ public class SensorController : MonoBehaviour
         public Vector3 position;
         public Quaternion rotation;
         public Vector3 localScale;
+        public Vector3 velocity;
 
-        public Trans(Transform trans)
+        public Trans(Transform trans, Vector3 velocity)
         {
             position = trans.position;
             rotation = trans.rotation;
             localScale = trans.localScale;
+            this.velocity = velocity;
         }
     }
 
@@ -65,7 +67,7 @@ public class SensorController : MonoBehaviour
                 {
                     while (smallerQueue.ContainsKey(hitScale)) hitScale += 0.000001f;
                     smallerQueue.RemoveAt(0);
-                    smallerQueue.Add(hitScale, new Trans(hit.transform));
+                    smallerQueue.Add(hitScale, new Trans(hit.transform, hit.attachedRigidbody.velocity));
                 }
             }
 
@@ -76,7 +78,7 @@ public class SensorController : MonoBehaviour
                 {
                     while (biggerQueue.ContainsKey(hitScale)) hitScale += 0.000001f;
                     biggerQueue.RemoveAt(0);
-                    biggerQueue.Add(hitScale, new Trans(hit.transform));
+                    biggerQueue.Add(hitScale, new Trans(hit.transform, hit.attachedRigidbody.velocity));
                 }
             }
         }
@@ -95,7 +97,7 @@ public class SensorController : MonoBehaviour
     float[] ParseCell(Trans other)
     {
         var results = new float[3];
-        var futurePos = other.position;
+        var futurePos = other.position + other.velocity * Time.deltaTime;
         results[0] = other.localScale.x / transform.localScale.x / 10f;
         results[1] = Vector2.Distance(transform.position, futurePos);
         results[2] = Vector2.SignedAngle(transform.up, futurePos) / 180f;

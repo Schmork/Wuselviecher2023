@@ -15,6 +15,10 @@ public class Dashboard : MonoBehaviour
     private static TMP_Text _fastestSpeedAchievedText;
     private static TMP_Text _massPerActionText;
     private static TMP_Text _straightMassText;
+    private static TMP_Text _cellCountText;
+    private static TMP_Text _cellMassText;
+    private static TMP_Text _cellMaxGenText;
+    private static TMP_Text _cellAvgGenText;
 
     [SerializeField] private TMP_Text distanceTravelledText;
     [SerializeField] private TMP_Text numEatenText;
@@ -24,6 +28,10 @@ public class Dashboard : MonoBehaviour
     [SerializeField] private TMP_Text fastestSpeedAchievedText;
     [SerializeField] private TMP_Text massPerActionText;
     [SerializeField] private TMP_Text straightMassText;
+    [SerializeField] private TMP_Text cellCountText;
+    [SerializeField] private TMP_Text cellMassText;
+    [SerializeField] private TMP_Text cellMaxGenText;
+    [SerializeField] private TMP_Text cellAvgGenText;
 
     [SerializeField] private TMP_Text speedValue;
     [SerializeField] private Slider speedSlider;
@@ -51,6 +59,10 @@ public class Dashboard : MonoBehaviour
         _fastestSpeedAchievedText = fastestSpeedAchievedText;
         _massPerActionText = massPerActionText;
         _straightMassText = straightMassText;
+        _cellCountText = cellCountText;
+        _cellMassText = cellMassText;
+        _cellMaxGenText = cellMaxGenText;
+        _cellAvgGenText = cellAvgGenText;
 
         _decaySlider = decaySlider;
 
@@ -180,5 +192,25 @@ public class Dashboard : MonoBehaviour
     public static void UpdateStraightMass(float value)
     {
         _straightMassText.text = value.ToString("F2");
+    }
+
+    public static void UpdateCellCount(int value)
+    {
+        _cellCountText.text = value.ToString();
+    }
+
+    public static void UpdateCellMass(float value)
+    {
+        _cellMassText.text = value.ToString("F2");
+    }
+
+    public static void UpdateCellMaxGen(int value)
+    {
+        _cellMaxGenText.text = value.ToString();
+    }
+
+    public static void UpdateCellAvgGen(double value)
+    {
+        _cellAvgGenText.text = value.ToString("F2");
     }
 }
