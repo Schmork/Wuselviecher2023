@@ -7,7 +7,6 @@ public enum ActivationFunction
     Sigmoid,
     TanH,
     Gaussian,
-    //InverseSquare,
     Sine,
     Identity
 }
@@ -22,7 +21,6 @@ public static class Activation
             ActivationFunction.Sigmoid => 1.0f / (1.0f + (float)Math.Exp(-x)),
             ActivationFunction.TanH => (float)Math.Tanh(x),
             ActivationFunction.Gaussian => Mathf.Exp(-(x * x)),
-            //ActivationFunction.InverseSquare => 1 / (x * x + 1),
             ActivationFunction.Sine => MathF.Sin(x),
             ActivationFunction.Identity => x,
             _ => throw new ArgumentException("Unknown activation function"),

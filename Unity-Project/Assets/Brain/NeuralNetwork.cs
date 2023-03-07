@@ -13,12 +13,6 @@ public class NeuralNetwork : System.ICloneable
         var numInputs = 4 + SensorController.numSensorValues;
         var numOutputs = 2;
         Layers = new List<Layer>() { new Layer(numInputs, 0, ActivationFunction.Input) };
-        /*
-        var numHidden1 = (numInputs + numOutputs) * 2 / 3;
-        var numHidden2 = numHidden1 / 2;
-        AddLayer(numHidden1);
-        AddLayer(numHidden2);
-        */
         AddLayer((numInputs + numOutputs) / 2);
         AddLayer(numOutputs);
 
