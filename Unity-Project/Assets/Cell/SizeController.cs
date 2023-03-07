@@ -12,7 +12,7 @@ public class SizeController : MonoBehaviour
         {
             if (value < WorldConfig.Instance.DeathBelowSize)
             {
-                Die();
+                gameObject.SetActive(false);
                 return;
             }
             size = value;
@@ -27,21 +27,13 @@ public class SizeController : MonoBehaviour
         return Mathf.Pow(Size, 0.5f);
     }
 
-    private void Awake()
+    void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        if (Size <= 0.01f) Die();
     }
 
-    private void Update()
+    void Update()
     {
         Size -= Mathf.Pow(Size + 1, 0.9f) / 50f * Time.deltaTime;
-    }
-
-    private void Die()
-    {
-        var stats = GetComponent<StatsCollector>();
-        if (stats != null) stats.AddToValhalla(GetComponent<MovementController>().Brain);
-        gameObject.SetActive(false);
     }
 }

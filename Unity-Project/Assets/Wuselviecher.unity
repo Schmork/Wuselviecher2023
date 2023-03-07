@@ -2863,12 +2863,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Valhalla: {fileID: 11400000, guid: 810b57c9ca5401842906cb74dace35a0, type: 2}
-  ValhallaMutation: 0.5
+  ValhallaMutation: 0.3
   DecayScoreTimes: {x: 1.5, y: 1}
   CellSpawnTimes: {x: 0.1, y: 0.25}
   CellSpawnRadius: 18
-  objectToPool: {fileID: 4899608772384843270, guid: 1e92a15f946344b47b31278ad92ac86a, type: 3}
-  amountToPool: 25
+  CellPrefab: {fileID: 4899608772384843270, guid: 1e92a15f946344b47b31278ad92ac86a, type: 3}
 --- !u!114 &413936425
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2883,7 +2882,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cellSizeMin: 7
   cellSizeMax: 9
-  deathBelowSize: 0.1
+  deathBelowSize: 0.2
 --- !u!1 &415385305
 GameObject:
   m_ObjectHideFlags: 0

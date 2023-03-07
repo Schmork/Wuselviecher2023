@@ -32,6 +32,7 @@ public class SensorController : MonoBehaviour
 
     private List<float> ParseHits(Collider2D[] hits)
     {
+        int i;
         var nullTrans = new Trans
         {
             position = Vector3.zero,
@@ -41,15 +42,15 @@ public class SensorController : MonoBehaviour
 
         var biggerQueue = new SortedList<float, Trans>();
         var smallerQueue = new SortedList<float, Trans>();
-
-        for (int i = 0; i < numTrackedCellsPerSensor; i++)
+        
+        for (i = 0; i < numTrackedCellsPerSensor; i++)
         {
             biggerQueue.Add(i / 1000f, nullTrans);
             smallerQueue.Add(i / 1000f, nullTrans);
         }
 
         var results = new List<float>();
-        for (int i = 0; i < hits.Length; i++)
+        for (i = 0; i < hits.Length; i++)
         {
             Collider2D hit = hits[i];
             if (!hit.gameObject.CompareTag("Edible") || hit.gameObject == gameObject) continue;
@@ -80,13 +81,13 @@ public class SensorController : MonoBehaviour
             }
         }
 
-        foreach (var item in smallerQueue)
+        foreach (var trans in smallerQueue)
         {
-            results.AddRange(ParseCell(item.Value));
+            results.AddRange(ParseCell(trans.Value));
         }
-        foreach (var item in biggerQueue)
+        foreach (var trans in biggerQueue)
         {
-            results.AddRange(ParseCell(item.Value));
+            results.AddRange(ParseCell(trans.Value));
         }
         return results;
     }
@@ -95,7 +96,7 @@ public class SensorController : MonoBehaviour
     {
         var results = new float[3];
         var futurePos = other.position;
-        results[0] = other.localScale.x / transform.localScale.x / 100f;
+        results[0] = other.localScale.x / transform.localScale.x / 10f;
         results[1] = Vector2.Distance(transform.position, futurePos);
         results[2] = Vector2.SignedAngle(transform.up, futurePos) / 180f;
         return results;

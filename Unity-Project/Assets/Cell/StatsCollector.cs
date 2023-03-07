@@ -11,9 +11,29 @@ public class StatsCollector : MonoBehaviour
     public int ActionsTaken;
     public float StraightMass;
     public Valhalla Valhalla;
+    MovementController mc;
 
-    public void AddToValhalla(NeuralNetwork nn)
+    void Awake()
     {
+        mc = GetComponent<MovementController>();
+    }
+
+    void OnEnable()
+    {
+        TimeSpawned = Time.time;
+        DistanceTravelled = 0;
+        NumEaten = 0;
+        MassEaten = 0;
+        MassEatenAtSpeed = 0;
+        FastestSpeedAchieved = 0;
+        ActionsTaken = 0;
+        StraightMass = 0;
+    }
+
+    void OnDisable()
+    {
+        var nn = mc.Brain;
+        if (nn == null) return;
         Valhalla.AddFallenHero(nn, DistanceTravelled, Valhalla.Metric.DistanceTravelled);
         Valhalla.AddFallenHero(nn, FastestSpeedAchieved, Valhalla.Metric.FastestSpeedAchieved);
         Valhalla.AddFallenHero(nn, MassEaten, Valhalla.Metric.MassEaten);

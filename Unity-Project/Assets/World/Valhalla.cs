@@ -128,14 +128,21 @@ public class Valhalla : ScriptableObject
         }
     }
 
+    public static float[] chance = new float[] { 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f };
+
     public NeuralNetwork GetRandomHero()
     {
+        int i;
         var sum = 0f;
-        foreach (var item in chance) sum += item;
+        for (i = 0; i < chance.Length; i++)
+        {
+            sum += chance[i];
+        }
+
         var rand = WorldConfig.Random.NextDouble() * sum;
 
         sum = 0;
-        for (int i = 0; i < chance.Length; i++)
+        for (i = 0; i < chance.Length; i++)
         {
             sum += chance[i];
             if (rand < sum) return fallenHeroes[(Metric)i];
@@ -145,6 +152,4 @@ public class Valhalla : ScriptableObject
         Metric randomMetric = (Metric)metrics.GetValue(Random.Range(0, metrics.Length));
         return fallenHeroes[randomMetric];
     }
-
-    public static float[] chance = new float[] { 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f };
 }

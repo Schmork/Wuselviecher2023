@@ -84,10 +84,11 @@ public class CollisionController : MonoBehaviour
 
     public Color Variation(Color color, float factor)
     {
-        var r = ClampRandom(color.r, factor);
-        var g = ClampRandom(color.g, factor);
-        var b = ClampRandom(color.b, factor);
-        return new Color(r, g, b);
+        return new Color(
+            ClampRandom(color.r, factor), 
+            ClampRandom(color.g, factor), 
+            ClampRandom(color.b, factor)
+            );
     }
 
     private float ClampRandom(float value, float factor)

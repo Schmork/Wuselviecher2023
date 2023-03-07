@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class WorldController : MonoBehaviour
@@ -11,23 +10,16 @@ public class WorldController : MonoBehaviour
     [SerializeField] Vector2 CellSpawnTimes;
     [SerializeField] float CellSpawnRadius;
 
-    public static List<GameObject> pooledObjects;
-    [SerializeField] GameObject objectToPool;
-    [SerializeField] int amountToPool;
+    static List<GameObject> _pooledObjects;
+    [SerializeField] GameObject CellPrefab;
 
     private void Awake()
     {
-        pooledObjects = new List<GameObject>();
+        _pooledObjects = new List<GameObject>();
     }
 
     void Start()
     {
-        pooledObjects = new List<GameObject>();
-        for (int i = 0; i < amountToPool; i++)
-        {
-            MakeNew();
-        }
-
         Valhalla.RefreshDashboard();
         InvokeRepeating(nameof(Spawn), CellSpawnTimes.x, CellSpawnTimes.y);
         InvokeRepeating(nameof(DecayScores), DecayScoreTimes.x, DecayScoreTimes.y);
@@ -35,16 +27,15 @@ public class WorldController : MonoBehaviour
 
     GameObject GetPooledCell()
     {
-        var cell = pooledObjects.Find(o => !o.activeInHierarchy);
+        var cell = _pooledObjects.Find(o => !o.activeInHierarchy);
         return cell == null ? MakeNew() : cell;
     }
 
     GameObject MakeNew()
     {
-        var tmp = Instantiate(objectToPool);
+        var tmp = Instantiate(CellPrefab, transform);
         tmp.SetActive(false);
-        tmp.transform.parent = transform;
-        pooledObjects.Add(tmp);
+        _pooledObjects.Add(tmp);
         return tmp;
     }
 
