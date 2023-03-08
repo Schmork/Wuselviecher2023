@@ -1,45 +1,46 @@
-using System.Collections.Generic;
 using UnityEngine;
+using Unity.Burst;
+using Unity.Mathematics;
+using System.Collections.Generic;
 
+[BurstCompile]
 public class SensorController : MonoBehaviour
 {
     const float circleDetectionRadius = 12f;
     const float circleSizeComparisonSafety = 0.9f; // reduce own size in comparisons as safety margin
 
-    static readonly int numTrackedCellsPerSensor = 7;
+    static readonly int numTrackedCellsPerSensor = 10;
     public static readonly int numSensorValues = numTrackedCellsPerSensor * 3 * 2;     // numTracked * numValues (for both big & small)
+    // make sure numSensorValues % 4 == 0 so we can use float4 operations
 
-    public float[] Scan()
+    public float4[] Scan()
     {
         var around = Physics2D.OverlapCircleAll(transform.position, circleDetectionRadius * transform.localScale.magnitude);
-        var results = ParseHits(around);
-        return results.ToArray();
+        return ParseHits(around);
     }
 
     struct Trans
     {
-        public Vector3 position;
-        public Quaternion rotation;
-        public Vector3 localScale;
-        public Vector3 velocity;
+        public float2 position;
+        public float localScale;
+        public float2 velocity;
 
         public Trans(Transform trans, Vector3 velocity)
         {
-            position = trans.position;
-            rotation = trans.rotation;
-            localScale = trans.localScale;
-            this.velocity = velocity;
+            position = new float2(trans.position.x, trans.position.y);
+            localScale = trans.localScale.x;
+            this.velocity = new float2(velocity.x, velocity.y);
         }
     }
 
-    private List<float> ParseHits(Collider2D[] hits)
+    [BurstCompile]
+    private float4[] ParseHits(Collider2D[] hits)
     {
         int i;
         var nullTrans = new Trans
         {
-            position = Vector3.zero,
-            rotation = Quaternion.identity,
-            localScale = Vector3.zero
+            position = float2.zero,
+            localScale = 0
         };
 
         var biggerQueue = new SortedList<float, Trans>();
@@ -63,7 +64,7 @@ public class SensorController : MonoBehaviour
             // find smaller
             if (hitScale < myScale * circleSizeComparisonSafety)
             {
-                if (hitScale > smallerQueue.Values[0].localScale.x)
+                if (hitScale > smallerQueue.Values[0].localScale)
                 {
                     while (smallerQueue.ContainsKey(hitScale)) hitScale += 0.000001f;
                     smallerQueue.RemoveAt(0);
@@ -74,7 +75,7 @@ public class SensorController : MonoBehaviour
             // find bigger
             if (hitScale > myScale * circleSizeComparisonSafety)
             {
-                if (hitScale > biggerQueue.Values[0].localScale.x)
+                if (hitScale > biggerQueue.Values[0].localScale)
                 {
                     while (biggerQueue.ContainsKey(hitScale)) hitScale += 0.000001f;
                     biggerQueue.RemoveAt(0);
@@ -91,16 +92,26 @@ public class SensorController : MonoBehaviour
         {
             results.AddRange(ParseCell(trans.Value));
         }
-        return results;
+
+        Debug.Assert(results.Count % 4 == 0);
+        float4[] results4 = new float4[results.Count / 4];
+        for (i = 0; i < results.Count; i += 4)
+        {
+            results4[i / 4] = new float4(results[i], results[i + 1], results[i + 2], results[i + 3]);
+        }
+        return results4;
     }
 
+    [BurstCompile]
     float[] ParseCell(Trans other)
     {
         var results = new float[3];
         var futurePos = other.position + other.velocity * Time.deltaTime;
-        results[0] = other.localScale.x / transform.localScale.x / 10f;
-        results[1] = Vector2.Distance(transform.position, futurePos);
-        results[2] = Vector2.SignedAngle(transform.up, futurePos) / 180f;
+        results[0] = other.localScale / transform.localScale.x / 10f;
+        results[1] = math.distancesq(new float2(transform.position.x, transform.position.y), futurePos);
+        results[2] 
+            = (math.atan2(futurePos.y - transform.position.y, futurePos.x - transform.position.x) 
+            - math.atan2(transform.up.y, transform.up.x)) / math.PI;
         return results;
     }
 }

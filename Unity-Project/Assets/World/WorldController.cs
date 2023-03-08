@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class WorldController : MonoBehaviour
 {
-    [SerializeField] Valhalla Valhalla;
+    Valhalla Valhalla;
     [SerializeField] float ValhallaMutation;
     [SerializeField] Vector2 DecayScoreTimes;
 
@@ -21,6 +21,7 @@ public class WorldController : MonoBehaviour
 
     void Start()
     {
+        Valhalla = GetComponent<Valhalla>();
         Valhalla.RefreshDashboard();
         InvokeRepeating(nameof(Spawn), CellSpawnTimes.x, CellSpawnTimes.y);
         InvokeRepeating(nameof(DecayScores), DecayScoreTimes.x, DecayScoreTimes.y);
@@ -80,7 +81,7 @@ public class WorldController : MonoBehaviour
         var hero = Valhalla.GetRandomHero();
         if (Random.value < 0.95 && hero != null)
         {
-            mc.SetBrain(new NeuralNetwork(hero, ValhallaMutation));
+            mc.Brain = new NeuralNetwork(hero, ValhallaMutation);
             if (mc.Brain.generation > oldestGen)
             {
                 oldestGen = mc.Brain.generation;
@@ -88,7 +89,7 @@ public class WorldController : MonoBehaviour
             }
         }
         else
-            mc.SetBrain(new NeuralNetwork());
+            mc.Brain = NeuralNetwork.NewRandom();
         cell.SetActive(true);
 
         var mcs = FindObjectsOfType<MovementController>();

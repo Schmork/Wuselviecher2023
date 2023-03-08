@@ -2,9 +2,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Valhalla", menuName = "Custom/Valhalla")]
-public class Valhalla : ScriptableObject
+public class Valhalla : MonoBehaviour
 {
+    public static readonly string VHERO = "Valhalla Hero ";
+    public static readonly string VSCOR = "Valhalla Score ";
+
     public enum Metric
     {
         DistanceTravelled,
@@ -41,10 +43,10 @@ public class Valhalla : ScriptableObject
     {
         foreach (Metric metric in System.Enum.GetValues(typeof(Metric)))
         {
-            string networkJson = PlayerPrefs.GetString(metric.ToString(), null);
+            string networkJson = PlayerPrefs.GetString(VHERO + metric.ToString(), null);
             if (networkJson == null) return;
             fallenHeroes[metric] = JsonUtility.FromJson<NeuralNetwork>(networkJson);
-            var scoreStr = PlayerPrefs.GetString("score " + metric.ToString(), null);
+            var scoreStr = PlayerPrefs.GetString(VSCOR + metric.ToString(), null);
             if (scoreStr == "") continue;
             bestScores[metric] = float.Parse(scoreStr, CultureInfo.InvariantCulture);
         }
@@ -82,11 +84,11 @@ public class Valhalla : ScriptableObject
                 break;
             case Metric.StraightMass:
                 Dashboard.UpdateStraightMass(score);
-                    break;
+                break;
         }
 
-        PlayerPrefs.SetString(metricType.ToString(), JsonUtility.ToJson(network));
-        PlayerPrefs.SetString("score " + metricType.ToString(),
+        PlayerPrefs.SetString(VHERO + metricType.ToString(), JsonUtility.ToJson(network));
+        PlayerPrefs.SetString(VSCOR + metricType.ToString(),
             bestScores[metricType].ToString(CultureInfo.InvariantCulture));
     }
 
@@ -117,8 +119,8 @@ public class Valhalla : ScriptableObject
 
         foreach (var metric in System.Enum.GetValues(typeof(Metric)))
         {
-            PlayerPrefs.SetString(metric.ToString(), JsonUtility.ToJson(new NeuralNetwork()));
-            PlayerPrefs.SetInt("score " + metric.ToString(), 0);
+            PlayerPrefs.SetString(VHERO + metric.ToString(), JsonUtility.ToJson(NeuralNetwork.NewRandom()));
+            PlayerPrefs.SetInt(VSCOR + metric.ToString(), 0);
         }
 
         var cells = FindObjectsOfType<SizeController>();

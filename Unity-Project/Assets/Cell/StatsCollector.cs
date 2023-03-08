@@ -33,7 +33,7 @@ public class StatsCollector : MonoBehaviour
     void OnDisable()
     {
         var nn = mc.Brain;
-        if (nn == null) return;
+        if (nn == null || Valhalla == null) return;
         Valhalla.AddFallenHero(nn, DistanceTravelled, Valhalla.Metric.DistanceTravelled);
         Valhalla.AddFallenHero(nn, FastestSpeedAchieved, Valhalla.Metric.FastestSpeedAchieved);
         Valhalla.AddFallenHero(nn, MassEaten, Valhalla.Metric.MassEaten);

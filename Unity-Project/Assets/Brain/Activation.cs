@@ -1,29 +1,29 @@
-﻿using System;
-using UnityEngine;
+﻿using Unity.Burst;
+using Unity.Mathematics;
 
 public enum ActivationFunction
 {
-    Input,
+    Identity,
     Sigmoid,
     TanH,
     Gaussian,
-    Sine,
-    Identity
+    Sine
 }
 
+[BurstCompile]
 public static class Activation
 {
+    [BurstCompile]
     public static float Evaluate(ActivationFunction function, float x)
     {
         return function switch
         {
-            ActivationFunction.Input => x,
-            ActivationFunction.Sigmoid => 1.0f / (1.0f + (float)Math.Exp(-x)),
-            ActivationFunction.TanH => (float)Math.Tanh(x),
-            ActivationFunction.Gaussian => Mathf.Exp(-(x * x)),
-            ActivationFunction.Sine => MathF.Sin(x),
             ActivationFunction.Identity => x,
-            _ => throw new ArgumentException("Unknown activation function"),
+            ActivationFunction.Sigmoid => 1.0f / (1.0f + math.exp(-x)),
+            ActivationFunction.TanH => math.tanh(x),
+            ActivationFunction.Gaussian => math.exp(-(math.lengthsq(x))),
+            ActivationFunction.Sine => math.sin(x),
+            _ => throw new System.ArgumentException("Unknown activation function"),
         };
     }
 }

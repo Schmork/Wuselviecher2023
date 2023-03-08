@@ -2895,6 +2895,7 @@ GameObject:
   - component: {fileID: 413936422}
   - component: {fileID: 413936425}
   - component: {fileID: 413936424}
+  - component: {fileID: 413936426}
   - component: {fileID: 413936423}
   m_Layer: 0
   m_Name: World
@@ -2942,7 +2943,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbd494a7344cdb04cb9d34cbf850e1a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Valhalla: {fileID: 11400000, guid: 810b57c9ca5401842906cb74dace35a0, type: 2}
   ValhallaMutation: 0.3
   DecayScoreTimes: {x: 1.5, y: 1}
   CellSpawnTimes: {x: 0.1, y: 0.25}
@@ -2963,6 +2963,18 @@ MonoBehaviour:
   cellSizeMin: 7
   cellSizeMax: 9
   deathBelowSize: 0.2
+--- !u!114 &413936426
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 413936419}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 221fc59c52f4e0d41966df1ef98ec50b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &415385305
 GameObject:
   m_ObjectHideFlags: 0
