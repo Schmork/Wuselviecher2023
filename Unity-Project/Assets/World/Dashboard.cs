@@ -39,6 +39,9 @@ public class Dashboard : MonoBehaviour
     [SerializeField] private TMP_Text decayValue;
     [SerializeField] private Slider decaySlider;
 
+    [SerializeField] private TMP_Text fenceValue;
+    [SerializeField] private Slider fenceSlider;
+
     [SerializeField] private Slider 
         vhDistanceTravelled, 
         vhNumEaten, 
@@ -51,6 +54,27 @@ public class Dashboard : MonoBehaviour
 
     private void Awake()
     {
+        speedSlider.onValueChanged.AddListener((value) =>
+        {
+            Time.timeScale = value;
+            speedValue.text = value.ToString("F2");
+            PlayerPrefs.SetFloat("sim speed", value);
+        });
+
+        decaySlider.onValueChanged.AddListener((value) =>
+        {
+            decayValue.text = CalcDecay(value).ToString("F7");
+            PlayerPrefs.SetFloat("decay", value);
+        });
+
+        fenceSlider.onValueChanged.AddListener((value) =>
+        {
+            var fence = (int)value;
+            fenceValue.text = fence.ToString();
+            PlayerPrefs.SetInt("fence", fence);
+            WorldConfig.Instance.FenceRadius = fence;
+        });
+
         _distanceTravelledText = distanceTravelledText;
         _numEatenText = numEatenText;
         _massEatenText = massEatenText;
@@ -66,13 +90,10 @@ public class Dashboard : MonoBehaviour
 
         _decaySlider = decaySlider;
 
-        var time = PlayerPrefs.GetString("sim speed");
-        if (float.TryParse(time, NumberStyles.Float, CultureInfo.InvariantCulture, out float resultTime))
-            Time.timeScale = resultTime;
+        Time.timeScale = PlayerPrefs.GetFloat("sim speed");
         speedSlider.value = Time.timeScale;
-        var decay = PlayerPrefs.GetString("decay");
-        if (float.TryParse(decay, NumberStyles.Float, CultureInfo.InvariantCulture, out float resultDecay))
-            decaySlider.value = resultDecay;
+        decaySlider.value = PlayerPrefs.GetFloat("decay");
+        fenceSlider.value = PlayerPrefs.GetInt("fence");
 
         vhDistanceTravelled.value = PlayerPrefs.GetFloat("chance" + Valhalla.Metric.DistanceTravelled.ToString());
         vhMassEaten.value = PlayerPrefs.GetFloat("chance" + Valhalla.Metric.MassEaten.ToString());
@@ -131,22 +152,9 @@ public class Dashboard : MonoBehaviour
         PlayerPrefs.SetFloat("chance" + Valhalla.Metric.StraightMass.ToString(), value);
     }
 
-    public void OnSpeedChanged(float value)
-    {
-        Time.timeScale = value;
-        speedValue.text = value.ToString("F2");
-        PlayerPrefs.SetString("sim speed", value.ToString(CultureInfo.InvariantCulture));
-    }
-
     private static float CalcDecay(float value)
     {
         return Mathf.Pow(10, -value + 1);
-    }
-
-    public void OnDecayChanged(float value)
-    {
-        decayValue.text = CalcDecay(value).ToString("F7");
-        PlayerPrefs.SetString("decay", value.ToString(CultureInfo.InvariantCulture));
     }
 
     public static float GetDecay()

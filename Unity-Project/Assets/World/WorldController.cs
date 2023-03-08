@@ -14,6 +14,8 @@ public class WorldController : MonoBehaviour
     static List<GameObject> _pooledObjects;
     [SerializeField] GameObject CellPrefab;
 
+    static double avgGen;
+
     private void Awake()
     {
         _pooledObjects = new List<GameObject>();
@@ -79,7 +81,7 @@ public class WorldController : MonoBehaviour
 
         var mc = cell.GetComponent<MovementController>();
         var hero = Valhalla.GetRandomHero();
-        if (Random.value < 0.95 && hero != null)
+        if (Random.value < 1 - 1 / (20 + avgGen * avgGen) && hero != null)
         {
             mc.Brain = new NeuralNetwork(hero, ValhallaMutation);
             if (mc.Brain.generation > oldestGen)
@@ -94,7 +96,10 @@ public class WorldController : MonoBehaviour
 
         var mcs = FindObjectsOfType<MovementController>();
         if (mcs.Length > 0)
-            Dashboard.UpdateCellAvgGen(mcs.Average(c => c.Brain.generation));
+        {
+            avgGen = mcs.Average(c => c.Brain.generation);
+            Dashboard.UpdateCellAvgGen(avgGen);
+        }
     }
 
     static int oldestGen = 0;

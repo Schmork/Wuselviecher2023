@@ -35,6 +35,13 @@ public class WorldConfig : MonoBehaviour
         instance = this;
     }
 
+    [SerializeField] private float initialValues;
+    public float InitialValues
+    {
+        get { return initialValues; }
+        set { initialValues = value; }
+    }
+
     [SerializeField] private float cellSizeMin;
     public float CellSizeMin
     {
@@ -55,5 +62,13 @@ public class WorldConfig : MonoBehaviour
     {
         get { return deathBelowSize; }
         set { deathBelowSize = value; }
+    }
+
+    [SerializeField] private float fenceRadius;
+
+    public float FenceRadius
+    {
+        get { return fenceRadius; }
+        set { fenceRadius = value; }
     }
 }

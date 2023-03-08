@@ -9,7 +9,6 @@ public class Layer : ICloneable
     public ActivationFunction[] NeuronFunctions;
     public float4[] NeuronBias;
     public float4[] Weights;
-    static readonly float initial = 30f;
 
     public Layer(int neuronCount, int inputLength, ActivationFunction? function = null)
     {
@@ -52,6 +51,7 @@ public class Layer : ICloneable
 
     static float4 RandomInitialValue()
     {
+        var initial = WorldConfig.Instance.InitialValues;
         return new float4(
             (float)WorldConfig.Random.NextDouble() * initial - initial / 2f,
             (float)WorldConfig.Random.NextDouble() * initial - initial / 2f,

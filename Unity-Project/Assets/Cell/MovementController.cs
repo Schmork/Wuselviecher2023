@@ -22,7 +22,7 @@ public class MovementController : MonoBehaviour
 
     void Update()
     {
-        if (transform.position.magnitude > 230 /*|| float.IsNaN(sc.Size)*/) gameObject.SetActive(false);
+        if (transform.position.magnitude > WorldConfig.Instance.FenceRadius) gameObject.SetActive(false);
         if (rb.velocity.magnitude > stats.FastestSpeedAchieved) stats.FastestSpeedAchieved = rb.velocity.magnitude;
         stats.DistanceTravelled += rb.velocity.magnitude / sc.Size * Time.deltaTime;
 
