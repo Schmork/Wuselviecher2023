@@ -16,7 +16,7 @@ public class NeuralNetwork : System.ICloneable
         var numInputs = 4 + SensorController.numSensorValues;
         var numOutputs = 4;
         var numHidden = 32;// (numInputs + numOutputs) / 2;
-        
+
         nn.Layers = new List<Layer>() { new Layer(numInputs, 0, ActivationFunction.Identity) };
         nn.AddLayer(numHidden);
         nn.AddLayer(numOutputs);
@@ -55,8 +55,8 @@ public class NeuralNetwork : System.ICloneable
 
     readonly Dictionary<MutationType, int> mutations = new Dictionary<MutationType, int>()
     {
-        { MutationType.BIAS, 10 },
-        { MutationType.WEIGHT, 40 },
+        { MutationType.BIAS, 15 },
+        { MutationType.WEIGHT, 6 },
         { MutationType.FUNCTION, 1 }
     };
 
@@ -81,9 +81,12 @@ public class NeuralNetwork : System.ICloneable
         switch (mutationType)
         {
             case MutationType.BIAS:
-                layer = Layers[Random.Range(0, Layers.Count)];
-                i = Random.Range(0, layer.NeuronBias.Length);
-                layer.NeuronBias[i] += Random.Range(-mutation, mutation);
+                for (int n = 0; n < 2; n++)
+                {
+                    layer = Layers[Random.Range(0, Layers.Count)];
+                    i = Random.Range(0, layer.NeuronBias.Length);
+                    layer.NeuronBias[i] += Random.Range(-mutation, mutation);
+                }
                 break;
             case MutationType.WEIGHT:
                 layer = Layers[Random.Range(1, Layers.Count)];

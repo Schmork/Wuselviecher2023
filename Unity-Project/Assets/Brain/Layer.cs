@@ -1,6 +1,10 @@
-﻿using Unity.Burst;
+﻿using Unity.Jobs;
+using UnityEngine.Jobs;
+using Unity.Burst;
 using System;
 using Unity.Mathematics;
+using System.Linq;
+using Unity.Collections;
 
 [BurstCompile]
 [Serializable]
@@ -20,6 +24,7 @@ public class Layer : ICloneable
         for (i = 0; i < NeuronBias.Length; i++)
         {
             NeuronBias[i] = RandomInitialValue();
+            NeuronFunctions[i] = function == null ? RandomFunction() : (ActivationFunction)function;
             NeuronFunctions[i + 0] = function == null ? RandomFunction() : (ActivationFunction)function;
             NeuronFunctions[i + 1] = function == null ? RandomFunction() : (ActivationFunction)function;
             NeuronFunctions[i + 2] = function == null ? RandomFunction() : (ActivationFunction)function;
@@ -57,13 +62,74 @@ public class Layer : ICloneable
     }
 
     public object Clone()
-    {
-        return new Layer(
+    {return new Layer(
             Weights.Clone() as float4[],
             NeuronBias.Clone() as float4[],
             NeuronFunctions.Clone() as ActivationFunction[]
             );
     }
+
+    /*
+    public struct FeedForwardJob : IJobParallelFor
+    {
+        public readonly NativeArray<int4> NeuronFunctions;
+        public readonly NativeArray<float4> NeuronBias;
+        public readonly NativeArray<float4> Weights;
+        public readonly NativeArray<float4> input;
+        public NativeArray<float4> output;
+
+        public FeedForwardJob(int4[] nf, float4[] nb, float4[] wg, float4[] it, float4[] ot)
+        {
+            NeuronFunctions = new NativeArray<int4>(nf, Allocator.TempJob);
+            NeuronBias = new NativeArray<float4>(nb, Allocator.TempJob);
+            Weights = new NativeArray<float4>(wg, Allocator.TempJob);
+            input = new NativeArray<float4>(it, Allocator.TempJob);
+            output = new NativeArray<float4>(ot, Allocator.TempJob);
+        }
+
+        [BurstCompile]
+        public void Execute(int i)
+        {
+
+            float4x4 inputMatrix = new float4x4(input[0], input[1], input[2], input[3]);
+            int w = i * 4; // use w instead of i for indexing Weights
+            float4x4 weightMatrix = new float4x4(
+                Weights[w + 0].w, Weights[w + 0].x, Weights[w + 0].y, Weights[w + 0].z,
+                Weights[w + 1].w, Weights[w + 1].x, Weights[w + 1].y, Weights[w + 1].z,
+                Weights[w + 2].w, Weights[w + 2].x, Weights[w + 2].y, Weights[w + 2].z,
+                Weights[w + 3].w, Weights[w + 3].x, Weights[w + 3].y, Weights[w + 3].z
+            );
+            var sum4 = math.mul(inputMatrix, weightMatrix);
+
+            float sum = 0f;
+            for (int j = 0; j < input.Length; j++)
+            {
+                sum += math.dot(Weights[i * input.Length + j], input[j]);
+            }
+            output[i] = new float4(
+                Activation.Evaluate(NeuronFunctions[i].w, NeuronBias[i].w * sum),
+                Activation.Evaluate(NeuronFunctions[i].x, NeuronBias[i].x * sum),
+                Activation.Evaluate(NeuronFunctions[i].y, NeuronBias[i].y * sum),
+                Activation.Evaluate(NeuronFunctions[i].z, NeuronBias[i].z * sum)
+                );
+        }
+    }
+
+    [BurstCompile]
+    public float4[] FeedForward(float4[] input)
+    {
+        float4[] output = new float4[NeuronBias.Length];
+        FeedForwardJob job = new FeedForwardJob(
+            FunctionIndices,
+            NeuronBias,
+            Weights,
+            input,
+            output
+        );
+        job.Schedule(NeuronBias.Length, 2048, default).Complete();
+        return output;
+    }
+    */
 
     [BurstCompile]
     public float4[] FeedForward(float4[] input)

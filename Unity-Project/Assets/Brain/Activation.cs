@@ -26,4 +26,18 @@ public static class Activation
             _ => throw new System.ArgumentException("Unknown activation function"),
         };
     }
+
+    [BurstCompile]
+    public static float Evaluate(int i, float x)
+    {
+        return (ActivationFunction)i switch
+        {
+            ActivationFunction.Identity => x,
+            ActivationFunction.Sigmoid => 1.0f / (1.0f + math.exp(-x)),
+            ActivationFunction.TanH => math.tanh(x),
+            ActivationFunction.Gaussian => math.exp(-(math.lengthsq(x))),
+            ActivationFunction.Sine => math.sin(x),
+            _ => throw new System.ArgumentException("Unknown activation function"),
+        };
+    }
 }
