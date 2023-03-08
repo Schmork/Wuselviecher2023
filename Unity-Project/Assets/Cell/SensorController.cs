@@ -11,8 +11,9 @@ public class SensorController : MonoBehaviour
 
     static readonly int numTrackedCellsPerSensor = 10;
     public static readonly int numSensorValues = numTrackedCellsPerSensor * 3 * 2;     // numTracked * numValues (for both big & small)
-    // make sure numSensorValues % 4 == 0 so we can use float4 operations
+                                                                                       // make sure numSensorValues % 4 == 0 so we can use float4 operations
 
+    [BurstCompile]
     public float4[] Scan()
     {
         var around = Physics2D.OverlapCircleAll(transform.position, circleDetectionRadius * transform.localScale.magnitude);
@@ -45,18 +46,17 @@ public class SensorController : MonoBehaviour
 
         var biggerQueue = new SortedList<float, Trans>();
         var smallerQueue = new SortedList<float, Trans>();
-        
+
         for (i = 0; i < numTrackedCellsPerSensor; i++)
         {
             biggerQueue.Add(i / 1000f, nullTrans);
             smallerQueue.Add(i / 1000f, nullTrans);
         }
 
-        var results = new List<float>();
         for (i = 0; i < hits.Length; i++)
         {
-            Collider2D hit = hits[i];
-            if (!hit.gameObject.CompareTag("Edible") || hit.gameObject == gameObject) continue;
+            var hit = hits[i];
+            if (hit.gameObject == gameObject) continue;
 
             var myScale = transform.localScale.x;
             var hitScale = hit.transform.localScale.x;
@@ -84,6 +84,7 @@ public class SensorController : MonoBehaviour
             }
         }
 
+        var results = new List<float>();
         foreach (var trans in smallerQueue)
         {
             results.AddRange(ParseCell(trans.Value));
@@ -93,7 +94,6 @@ public class SensorController : MonoBehaviour
             results.AddRange(ParseCell(trans.Value));
         }
 
-        Debug.Assert(results.Count % 4 == 0);
         float4[] results4 = new float4[results.Count / 4];
         for (i = 0; i < results.Count; i += 4)
         {
@@ -109,8 +109,8 @@ public class SensorController : MonoBehaviour
         var futurePos = other.position + other.velocity * Time.deltaTime;
         results[0] = other.localScale / transform.localScale.x / 10f;
         results[1] = math.distancesq(new float2(transform.position.x, transform.position.y), futurePos);
-        results[2] 
-            = (math.atan2(futurePos.y - transform.position.y, futurePos.x - transform.position.x) 
+        results[2]
+            = (math.atan2(futurePos.y - transform.position.y, futurePos.x - transform.position.x)
             - math.atan2(transform.up.y, transform.up.x)) / math.PI;
         return results;
     }

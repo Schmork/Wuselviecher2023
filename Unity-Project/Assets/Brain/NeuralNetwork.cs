@@ -14,18 +14,11 @@ public class NeuralNetwork : System.ICloneable
         var nn = new NeuralNetwork();
 
         var numInputs = 4 + SensorController.numSensorValues;
-        UnityEngine.Debug.Assert(numInputs % 4 == 0);
         var numOutputs = 4;
-        UnityEngine.Debug.Assert(numOutputs % 4 == 0);
         var numHidden = 32;// (numInputs + numOutputs) / 2;
-        UnityEngine.Debug.Assert(numHidden % 4 == 0);
         
-        UnityEngine.Debug.Assert(numInputs % 4 == 0);
-        //UnityEngine.Debug.Log(numInputs + ", " + numHidden + ", " + numOutputs);
         nn.Layers = new List<Layer>() { new Layer(numInputs, 0, ActivationFunction.Identity) };
-        UnityEngine.Debug.Assert(nn.Layers[^1].NeuronBias.Length % 4 == 0, "NN Fac LH NB length: " + nn.Layers[^1].NeuronBias.Length);
         nn.AddLayer(numHidden);
-        UnityEngine.Debug.Assert(nn.Layers[^1].NeuronBias.Length % 4 == 0, "NN Fac LO NB length: " + nn.Layers[^1].NeuronBias.Length);
         nn.AddLayer(numOutputs);
 
         nn.Layers[^1].NeuronFunctions[0] = ActivationFunction.TanH;
@@ -42,9 +35,6 @@ public class NeuralNetwork : System.ICloneable
         Layers = new List<Layer>();
         for (int i = 0; i < parent.Layers.Count; i++)
         {
-            //UnityEngine.Debug.Assert(parent.Layers[i].NeuronBias.Length % 4 == 0, "NN mut + " + i + " NB = " + parent.Layers[i].NeuronBias.Length);
-            UnityEngine.Debug.Assert(parent.Layers[i].Weights.Length % 4 == 0, "NN mut + " + i + " W = " + parent.Layers[i].Weights.Length);
-
             Layers.Add(parent.Layers[i].Clone() as Layer);
         }
         Mutate(mutation);
@@ -53,8 +43,6 @@ public class NeuralNetwork : System.ICloneable
 
     private void AddLayer(int numNeurons, ActivationFunction? function = null)
     {
-        UnityEngine.Debug.Assert(numNeurons % 4 == 0, "NN nN = " + numNeurons);
-        UnityEngine.Debug.Assert(Layers[^1].NeuronBias.Length % 4 == 0, "NN NB length: " + Layers[^1].NeuronBias.Length);
         Layers.Add(new Layer(numNeurons, Layers[^1].NeuronBias.Length, function));
     }
 
@@ -103,9 +91,11 @@ public class NeuralNetwork : System.ICloneable
                 layer.Weights[i] += Random.Range(-mutation, mutation);
                 break;
             case MutationType.FUNCTION:
-                layer = Layers[Random.Range(1, Layers.Count - 1)];
+                layer = Layers[Random.Range(1, Layers.Count)];
                 i = Random.Range(0, layer.NeuronFunctions.Length);
                 layer.NeuronFunctions[i] = Layer.RandomFunction();
+                Layers[^1].NeuronFunctions[0] = ActivationFunction.TanH;
+                Layers[^1].NeuronFunctions[1] = ActivationFunction.Sigmoid;
                 break;
             default:
                 break;

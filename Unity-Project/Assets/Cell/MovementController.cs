@@ -10,6 +10,13 @@ public class MovementController : MonoBehaviour
     float4[] inputs;
 
     public NeuralNetwork Brain;
+    float4[] sensorData;
+    float4[] actionVector = new float4[2];
+    float lastSensorUse;
+    float lastBrainUse;
+
+    static readonly float brainPrice = 0.001f;              // based on rough Stopwatch measurements 
+    static readonly float sensorPrice = brainPrice * 15;    // based on rough Stopwatch measurements 
 
     void Start()
     {
@@ -22,7 +29,7 @@ public class MovementController : MonoBehaviour
 
     void Update()
     {
-        if (transform.position.magnitude > WorldConfig.Instance.FenceRadius) gameObject.SetActive(false);
+        if (transform.position.magnitude > WorldConfig.Instance.FenceRadius * math.sqrt(10 + sc.Size)) gameObject.SetActive(false);
         if (rb.velocity.magnitude > stats.FastestSpeedAchieved) stats.FastestSpeedAchieved = rb.velocity.magnitude;
         stats.DistanceTravelled += rb.velocity.magnitude / sc.Size * Time.deltaTime;
 
@@ -34,13 +41,24 @@ public class MovementController : MonoBehaviour
             System.MathF.Tanh(rb.angularVelocity / 900f)
             );
 
-        float4[] data = sensors.Scan();
-        for (int i = 0; i < data.Length; i++)
+        if (Time.time - lastSensorUse > actionVector[0].y)
         {
-            inputs[n++] = data[i];
+            sensorData = sensors.Scan();
+            lastSensorUse = Time.time;
+            sc.Size -= sensorPrice;
+        }
+        for (int i = 0; i < sensorData.Length; i++)
+        {
+            inputs[n++] = sensorData[i];
         }
 
-        var action = Brain.FeedForward(inputs)[0];
+        if (Time.time - lastBrainUse > actionVector[0].z)
+        {
+            actionVector = Brain.FeedForward(inputs);
+            lastBrainUse = Time.time;
+            sc.Size -= brainPrice;
+        }
+        var action = actionVector[0];
 
         var torque = 50f / Mathf.Pow(sc.Size + 1, 0.6f);// / (Mathf.Abs(rb.angularVelocity) + 0.0001f);
         var thrust = 50f * sc.Size;

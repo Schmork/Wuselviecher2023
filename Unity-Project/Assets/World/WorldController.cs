@@ -84,10 +84,10 @@ public class WorldController : MonoBehaviour
         if (Random.value < 1 - 1 / (20 + avgGen * avgGen) && hero != null)
         {
             mc.Brain = new NeuralNetwork(hero, ValhallaMutation);
-            if (mc.Brain.generation > oldestGen)
+            if (mc.Brain.generation > Valhalla.OldestGen)
             {
-                oldestGen = mc.Brain.generation;
-                Dashboard.UpdateCellMaxGen(oldestGen);
+                Valhalla.OldestGen = mc.Brain.generation;
+                Dashboard.UpdateCellMaxGen(Valhalla.OldestGen);
             }
         }
         else
@@ -101,6 +101,4 @@ public class WorldController : MonoBehaviour
             Dashboard.UpdateCellAvgGen(avgGen);
         }
     }
-
-    static int oldestGen = 0;
 }

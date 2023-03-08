@@ -12,8 +12,6 @@ public class Layer : ICloneable
 
     public Layer(int neuronCount, int inputLength, ActivationFunction? function = null)
     {
-        UnityEngine.Debug.Assert(neuronCount % 4 == 0, "L neuronCount = " + neuronCount);
-        UnityEngine.Debug.Assert(inputLength % 4 == 0, "L inputLength = " + inputLength);
         NeuronFunctions = new ActivationFunction[neuronCount];
         NeuronBias = new float4[neuronCount / 4];
         Weights = new float4[neuronCount * inputLength / 4];
@@ -35,8 +33,6 @@ public class Layer : ICloneable
 
     public Layer(float4[] weights, float4[] neuronBias, ActivationFunction[] neuronFunction)
     {
-        //UnityEngine.Debug.Assert(neuronBias.Length % 4 == 0, "L neuronBias.Length = " + neuronBias.Length);
-        UnityEngine.Debug.Assert(weights.Length % 4 == 0, "L weights.Length = " + weights.Length);
         NeuronFunctions = neuronFunction;
         NeuronBias = neuronBias;
         Weights = weights;
@@ -62,8 +58,6 @@ public class Layer : ICloneable
 
     public object Clone()
     {
-        UnityEngine.Debug.Assert(Weights.Length % 4 == 0, "L C Weights.Length = " + Weights.Length);
-        //UnityEngine.Debug.Assert(NeuronBias.Length % 4 == 0, "L C NeuronBias.Length = " + NeuronBias.Length);
         return new Layer(
             Weights.Clone() as float4[],
             NeuronBias.Clone() as float4[],
@@ -97,12 +91,10 @@ public class Layer : ICloneable
     public float4[] FeedForwardInput(float4[] input)
     {
         float4[] output = new float4[NeuronBias.Length];
-
         for (int i = 0; i < NeuronBias.Length; i++)
         {
             output[i] = NeuronBias[i] * input[i];
         }
-
         return output;
     }
 }

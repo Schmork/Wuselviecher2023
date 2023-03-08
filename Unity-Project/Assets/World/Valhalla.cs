@@ -21,6 +21,7 @@ public class Valhalla : MonoBehaviour
 
     private Dictionary<Metric, NeuralNetwork> fallenHeroes;
     private Dictionary<Metric, float> bestScores;
+    public static int OldestGen = 0;
 
     public void OnEnable()
     {
@@ -115,18 +116,18 @@ public class Valhalla : MonoBehaviour
 
     public void Wipe()
     {
+        var cells = FindObjectsOfType<SizeController>();
+        for (int i = 0; i < cells.Length; i++)
+        {
+            cells[i].gameObject.SetActive(false);
+        }
+
         InitDictionaries();
 
         foreach (var metric in System.Enum.GetValues(typeof(Metric)))
         {
             PlayerPrefs.SetString(VHERO + metric.ToString(), JsonUtility.ToJson(NeuralNetwork.NewRandom()));
             PlayerPrefs.SetInt(VSCOR + metric.ToString(), 0);
-        }
-
-        var cells = FindObjectsOfType<SizeController>();
-        for (int i = 0; i < cells.Length; i++)
-        {
-            cells[i].gameObject.SetActive(false);
         }
     }
 

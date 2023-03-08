@@ -3056,7 +3056,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbd494a7344cdb04cb9d34cbf850e1a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ValhallaMutation: 0.3
+  ValhallaMutation: 0.2
   DecayScoreTimes: {x: 1.5, y: 1}
   CellSpawnTimes: {x: 0.1, y: 0.25}
   CellSpawnRadius: 18
@@ -9621,10 +9621,10 @@ MonoBehaviour:
   m_FillRect: {fileID: 1964824308}
   m_HandleRect: {fileID: 23295470}
   m_Direction: 0
-  m_MinValue: 200
-  m_MaxValue: 400
+  m_MinValue: 50
+  m_MaxValue: 100
   m_WholeNumbers: 1
-  m_Value: 230
+  m_Value: 60
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
