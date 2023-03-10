@@ -14,10 +14,14 @@ public class ClearPlayerPrefs : MonoBehaviour
         {
             DrawDefaultInspector();
 
-            if (GUILayout.Button("Clear PlayerPrefs"))
+            if (GUILayout.Button("Clear Valhalla"))
             {
-                PlayerPrefs.DeleteAll();
-                Debug.Log("PlayerPrefs cleared.");
+                foreach (var metric in System.Enum.GetValues(typeof(Valhalla.Metric)))
+                {
+                    PlayerPrefs.DeleteKey(Valhalla.VHERO + metric.ToString());
+                    PlayerPrefs.DeleteKey(Valhalla.VSCOR + metric.ToString());
+                }
+                Debug.Log("Valhalla cleared.");
             }
         }
     }

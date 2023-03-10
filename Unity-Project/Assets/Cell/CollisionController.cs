@@ -36,11 +36,10 @@ public class CollisionController : MonoBehaviour
 
         sc.Size += diff;
         other.Size -= diff;
-        
-        stats.MassEatenAtSpeed += 0.1f + diff / sc.Size * (0.01f + Mathf.Sqrt(Rb.velocity.magnitude * Time.deltaTime));
-        stats.NumEaten++;
-        stats.MassEaten += diff / sc.Size;
-        stats.StraightMass += diff / sc.Size / Mathf.Exp(Mathf.Abs(Rb.angularVelocity * Time.deltaTime));
+
+        stats.AddToScore(Valhalla.Metric.MassEatenAtSpeed, 0.1f + diff / sc.Size * (0.01f + Mathf.Sqrt(Rb.velocity.magnitude * Time.deltaTime)));
+        stats.AddToScore(Valhalla.Metric.MassEaten, diff / sc.Size);
+        stats.AddToScore(Valhalla.Metric.StraightMass, diff / sc.Size / Mathf.Exp(Mathf.Abs(Rb.angularVelocity * Time.deltaTime)));
 
         var otherCc = collider.GetComponent<CollisionController>();
         if (otherCc == null) return;
