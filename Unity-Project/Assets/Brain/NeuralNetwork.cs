@@ -23,9 +23,6 @@ public class NeuralNetwork : System.ICloneable
         nn.AddLayer(numHidden);
         nn.AddLayer(numOutputs);
 
-        nn.Layers[^1].NeuronFunctions[0] = ActivationFunction.TanH;
-        nn.Layers[^1].NeuronFunctions[1] = ActivationFunction.Sigmoid;
-
         nn.generation = 0;
 
         for (int i = 0; i < nn.Memory.Length; i++)
@@ -122,8 +119,6 @@ public class NeuralNetwork : System.ICloneable
                 layer = Layers[Random.Range(1, Layers.Count)];
                 i = Random.Range(0, layer.NeuronFunctions.Length);
                 layer.NeuronFunctions[i] = Layer.RandomFunction();
-                Layers[^1].NeuronFunctions[0] = ActivationFunction.TanH;
-                Layers[^1].NeuronFunctions[1] = ActivationFunction.Sigmoid;
                 break;
             default:
                 break;

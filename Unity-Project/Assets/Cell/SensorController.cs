@@ -6,13 +6,14 @@ using System.Collections.Generic;
 [BurstCompile]
 public class SensorController : MonoBehaviour
 {
+    [SerializeField] StatsCollector stats;
+
     const float circleDetectionRadius = 12f;
     const float circleSizeComparisonSafety = 0.9f; // reduce own size in comparisons as safety margin
 
     static readonly int numTrackedCellsPerSensor = 6;
     public static readonly int numSensorValues = numTrackedCellsPerSensor * 3 * 2;     // numTracked * numValues (for both big & small)
                                                                                        // make sure numSensorValues % 4 == 0 so we can use float4 operations
-
     [BurstCompile]
     public float4[] Scan()
     {
@@ -46,59 +47,77 @@ public class SensorController : MonoBehaviour
             localScale = 0
         };
 
-        var biggerQueue = new SortedList<float, Trans>();
-        var smallerQueue = new SortedList<float, Trans>();
+        var biggerQueue = new SortedList<float, Trans>(numTrackedCellsPerSensor);
+        var smallerQueue = new SortedList<float, Trans>(numTrackedCellsPerSensor);
 
-        for (i = 0; i < numTrackedCellsPerSensor; i++)
-        {
-            biggerQueue.Add(i / 1000f, nullTrans);
-            smallerQueue.Add(i / 1000f, nullTrans);
-        }
-
+        var myScale = transform.localScale.x;
         for (i = 0; i < hits.Length; i++)
         {
             var hit = hits[i];
             if (hit.gameObject == gameObject) continue;
 
-            var myScale = transform.localScale.x;
             var hitScale = hit.transform.localScale.x;
 
             // find smaller
             if (hitScale < myScale * circleSizeComparisonSafety)
             {
-                if (hitScale > smallerQueue.Values[0].localScale)
+                while (smallerQueue.ContainsKey(hitScale)) hitScale += 0.001f;
+                if (smallerQueue.Count < numTrackedCellsPerSensor)
                 {
-                    while (smallerQueue.ContainsKey(hitScale)) hitScale += 0.000001f;
+                    smallerQueue.Add(hitScale, new Trans(hit.transform, hit.attachedRigidbody.velocity));
+                }
+                else if (hitScale > smallerQueue.Values[0].localScale)
+                {
                     smallerQueue.RemoveAt(0);
                     smallerQueue.Add(hitScale, new Trans(hit.transform, hit.attachedRigidbody.velocity));
                 }
             }
 
             // find bigger
-            if (hitScale > myScale * circleSizeComparisonSafety)
+            else
             {
                 var sqDist = math.distancesq(myPos, V3_to_float2(hit.transform.position));
-                if (sqDist < biggerQueue.Keys[0])
+                while (biggerQueue.ContainsKey(sqDist)) sqDist += 0.001f;
+                if (biggerQueue.Count < numTrackedCellsPerSensor)
                 {
-                    while (biggerQueue.ContainsKey(sqDist)) sqDist += 0.000001f;
+                    biggerQueue.Add(sqDist, new Trans(hit.transform, hit.attachedRigidbody.velocity));
+                }
+                else if (sqDist < biggerQueue.Keys[0])
+                {
                     biggerQueue.RemoveAt(0);
                     biggerQueue.Add(sqDist, new Trans(hit.transform, hit.attachedRigidbody.velocity));
                 }
             }
         }
 
-        var results = new List<float>();
-        foreach (var trans in smallerQueue)
+        var results = new float[numSensorValues];
+        int j;
+        for (i = 0; i < numSensorValues / 2; i += 3)
         {
-            results.AddRange(ParseCell(trans.Value));
-        }
-        foreach (var trans in biggerQueue)
-        {
-            results.AddRange(ParseCell(trans.Value));
+            var trans = smallerQueue.Count <= i ? nullTrans : smallerQueue.Values[i / 3];
+            for (j = 0; j < 3; j++)
+            {
+                results[i + j] = ParseCell(trans)[j];
+            }
         }
 
-        float4[] results4 = new float4[results.Count / 4];
-        for (i = 0; i < results.Count; i += 4)
+        for (i = 0; i < numSensorValues / 2; i += 3)
+        {
+            var trans = biggerQueue.Count <= i ? nullTrans : biggerQueue.Values[i / 3];
+            for (j = 0; j < 3; j++)
+            {
+                var bigger = ParseCell(trans);
+                results[i + j + numSensorValues / 2] = bigger[j];
+                if (biggerQueue.Count > 0)
+                    stats.AddToScore(
+                        Valhalla.Metric.PeaceTime,
+                        myScale / 10000f * bigger[0] * bigger[1] * Time.deltaTime
+                        );
+            }
+        }
+
+        float4[] results4 = new float4[results.Length / 4];
+        for (i = 0; i < results.Length; i += 4)
         {
             results4[i / 4] = new float4(results[i], results[i + 1], results[i + 2], results[i + 3]);
         }

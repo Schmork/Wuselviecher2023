@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using UnityEngine;
 
 public class Valhalla : MonoBehaviour
@@ -13,14 +14,19 @@ public class Valhalla : MonoBehaviour
         MassEaten,
         TimeSurvived,
         MassEatenAtSpeed,
-        FastestSpeedAchieved,
+        AverageSpeed,
         MassPerAction,
-        StraightMass
+        StraightMass,
+        PeaceTime
     }
 
     private static Dictionary<Metric, NeuralNetwork> heroes;
     private static Dictionary<Metric, float> scores;
     public static int OldestGen = 0;
+    public static float[] metricChanceForRandomHero = new float[System.Enum.GetValues(typeof(Metric)).Length];
+
+    public delegate void OnHighscoreChangedHandler(Metric metric, float newScore);
+    public static event OnHighscoreChangedHandler OnHighscoreChanged;
 
     public void OnEnable()
     {
@@ -30,6 +36,11 @@ public class Valhalla : MonoBehaviour
 
     void InitDictionaries()
     {
+        for (int i = 0; i < metricChanceForRandomHero.Length; i++)
+        {
+            metricChanceForRandomHero[i] = 1;
+        }
+
         heroes = new Dictionary<Metric, NeuralNetwork>();
         scores = new Dictionary<Metric, float>();
         foreach (Metric metric in System.Enum.GetValues(typeof(Metric)))
@@ -59,46 +70,11 @@ public class Valhalla : MonoBehaviour
         heroes[metric] = network;
         scores[metric] = score;
 
-        switch (metric)
-        {
-            case Metric.DistanceTravelled:
-                Dashboard.UpdateDistanceTravelledRecord(score);
-                break;
-            case Metric.FastestSpeedAchieved:
-                Dashboard.UpdateFastestSpeedAchievedRecord(score);
-                break;
-            case Metric.MassEaten:
-                Dashboard.UpdateMassEatenRecord(score);
-                break;
-            case Metric.MassEatenAtSpeed:
-                Dashboard.UpdateMassEatenAtSpeedRecord(score);
-                break;
-            case Metric.TimeSurvived:
-                Dashboard.UpdateTimeSurvivedRecord(score);
-                break;
-            case Metric.MassPerAction:
-                Dashboard.UpdateMassPerAction(score);
-                break;
-            case Metric.StraightMass:
-                Dashboard.UpdateStraightMass(score);
-                break;
-        }
+        OnHighscoreChanged?.Invoke(metric, score);
 
         PlayerPrefs.SetString(VHERO + metric.ToString(), JsonUtility.ToJson(network));
         PlayerPrefs.SetString(VSCOR + metric.ToString(),
             scores[metric].ToString(CultureInfo.InvariantCulture));
-    }
-
-    public void RefreshDashboard()
-    {
-        Dashboard.UpdateDistanceTravelledRecord(scores[Metric.DistanceTravelled]);
-        Dashboard.UpdateFastestSpeedAchievedRecord(scores[Metric.FastestSpeedAchieved]);
-        Dashboard.UpdateMassEatenAtSpeedRecord(scores[Metric.MassEatenAtSpeed]);
-        Dashboard.UpdateMassEatenRecord(scores[Metric.MassEaten]);
-        Dashboard.UpdateTimeSurvivedRecord(scores[Metric.TimeSurvived]);
-        Dashboard.UpdateMassPerAction(scores[Metric.MassPerAction]);
-        Dashboard.UpdateStraightMass(scores[Metric.StraightMass]);
-        Dashboard.UpdateCellMaxGen(OldestGen);
     }
 
     float lastDecay;
@@ -106,11 +82,12 @@ public class Valhalla : MonoBehaviour
     {
         if (Time.time - lastDecay < 1) return;
         lastDecay = Time.time;
+
         for (int i = 0; i < scores.Count; i++)
         {
             scores[(Metric)i] *= (1 - Dashboard.Decay);
+            OnHighscoreChanged?.Invoke(scores.ElementAt(i).Key, scores[(Metric)i]);
         }
-        RefreshDashboard();
     }
 
     public void Wipe()
@@ -123,32 +100,30 @@ public class Valhalla : MonoBehaviour
 
         OldestGen = 0;
         InitDictionaries();
-        RefreshDashboard();
 
-        foreach (var metric in System.Enum.GetValues(typeof(Metric)))
+        foreach (Metric metric in System.Enum.GetValues(typeof(Metric)))
         {
+            OnHighscoreChanged?.Invoke(metric, 0);
             PlayerPrefs.SetString(VHERO + metric.ToString(), JsonUtility.ToJson(NeuralNetwork.NewRandom()));
             PlayerPrefs.SetInt(VSCOR + metric.ToString(), 0);
         }
     }
 
-    public static float[] chance = new float[] { 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f };
-
     public static NeuralNetwork GetRandomHero()
     {
         int i;
         var sum = 0f;
-        for (i = 0; i < chance.Length; i++)
+        for (i = 0; i < metricChanceForRandomHero.Length; i++)
         {
-            sum += chance[i];
+            sum += metricChanceForRandomHero[i];
         }
 
         var rand = Utility.Random.NextDouble() * sum;
 
         sum = 0;
-        for (i = 0; i < chance.Length; i++)
+        for (i = 0; i < metricChanceForRandomHero.Length; i++)
         {
-            sum += chance[i];
+            sum += metricChanceForRandomHero[i];
             if (rand < sum) return heroes[(Metric)i];
         }
 

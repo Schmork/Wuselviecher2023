@@ -2,20 +2,10 @@ using UnityEngine;
 
 public class CollisionController : MonoBehaviour
 {
-    SizeController sc;
-    public Rigidbody2D Rb;
-    SpriteRenderer rendr;
-    ParticleSystem.MainModule psMain;
-    StatsCollector stats;
-
-    private void Start()
-    {
-        sc = GetComponent<SizeController>();
-        rendr = GetComponent<SpriteRenderer>();
-        stats = GetComponent<StatsCollector>();
-        psMain = GetComponent<ParticleSystem>().main;
-        psMain.startColor = rendr.material.color;
-    }
+    [SerializeField] SizeController sc;
+    [SerializeField] Rigidbody2D Rb;
+    [SerializeField] SpriteRenderer rendr;
+    [SerializeField] StatsCollector stats;
 
     private void OnTriggerStay2D(Collider2D collider)
     {
@@ -32,7 +22,6 @@ public class CollisionController : MonoBehaviour
         var col2 = other.GetComponent<SpriteRenderer>().material.color;
         var col = MixColors(col1, col2, diff / size);
         rendr.material.color = col;
-        psMain.startColor = col;
 
         sc.Size += diff;
         other.Size -= diff;
