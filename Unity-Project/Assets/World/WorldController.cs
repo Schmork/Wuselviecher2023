@@ -50,55 +50,55 @@ public class WorldController : MonoBehaviour
 
     void Spawn()
     {
-        if (1f / Time.unscaledDeltaTime < 60) return;
         var existingCells = FindObjectsOfType<SizeController>();
         Dashboard.UpdateCellCount(existingCells.Length);
         Dashboard.UpdateCellMass(existingCells.Sum(c => c.Size));
-        var which = Random.Range(-1, 2) * transform.right * CellSpawnRadius * 2.3f;
-        var pos = which + transform.position + (Vector3)Random.insideUnitCircle * CellSpawnRadius;
-
-        SizeController other;
-        for (int i = 0; i < existingCells.Length; i++)
+        for (int t = 0; t < Mathf.Max(1f, 1f / Time.deltaTime / 60f) * Time.unscaledDeltaTime; t++)
         {
-            other = existingCells[i];
-            if (Vector2.Distance(other.transform.position, pos) < other.Size2Scale())
-                return;
-        }
+            var which = Random.Range(-1, 2) * transform.right * CellSpawnRadius * 2.3f;
+            var pos = which + transform.position + (Vector3)Random.insideUnitCircle * CellSpawnRadius;
 
-        var cell = GetPooledCell();
-        cell.transform.position = pos;
-        cell.transform.rotation = Quaternion.Euler(0, 0, Random.Range(0f, 360f));
-        cell.GetComponent<SpriteRenderer>().material.color =
-            Random.ColorHSV(
-            0, 1,
-            0.6f, 1,
-            0.6f, 1,
-            1, 1);
-        cell.GetComponent<SizeController>().Size = Random.Range(
-            WorldConfig.Instance.CellSizeMin,
-            WorldConfig.Instance.CellSizeMax);
-        cell.GetComponent<StatsCollector>().Valhalla = Valhalla;
-
-        var mc = cell.GetComponent<MovementController>();
-        var hero = Valhalla.GetRandomHero();
-        if (Random.value < 1 - 1 / (20 + avgGen * avgGen) && hero != null)
-        {
-            mc.Brain = new NeuralNetwork(hero, ValhallaMutation);
-            if (mc.Brain.generation > Valhalla.OldestGen)
+            SizeController other;
+            for (int i = 0; i < existingCells.Length; i++)
             {
-                Valhalla.OldestGen = mc.Brain.generation;
-                Dashboard.UpdateCellMaxGen(Valhalla.OldestGen);
+                other = existingCells[i];
+                if (Vector2.Distance(other.transform.position, pos) < other.Size2Scale() * 1.3f)
+                    return;
             }
-        }
-        else
-            mc.Brain = NeuralNetwork.NewRandom();
-        cell.SetActive(true);
 
-        var mcs = FindObjectsOfType<MovementController>();
-        if (mcs.Length > 0)
-        {
-            avgGen = mcs.Average(c => c.Brain.generation);
-            Dashboard.UpdateCellAvgGen(avgGen);
+            var cell = GetPooledCell();
+            cell.transform.position = pos;
+            cell.transform.rotation = Quaternion.Euler(0, 0, Random.Range(0f, 360f));
+            cell.GetComponent<SpriteRenderer>().material.color =
+                Random.ColorHSV(
+                0, 1,
+                0.6f, 1,
+                0.6f, 1,
+                1, 1);
+            cell.GetComponent<SizeController>().Size = WorldConfig.Instance.CellSpawnSize;
+            cell.GetComponent<StatsCollector>().Valhalla = Valhalla;
+
+            var mc = cell.GetComponent<MovementController>();
+            var hero = Valhalla.GetRandomHero();
+            if (Random.value < 1 - 1 / (20 + avgGen * avgGen) && hero != null)
+            {
+                mc.Brain = new NeuralNetwork(hero, ValhallaMutation);
+                if (mc.Brain.generation > Valhalla.OldestGen)
+                {
+                    Valhalla.OldestGen = mc.Brain.generation;
+                    Dashboard.UpdateCellMaxGen(Valhalla.OldestGen);
+                }
+            }
+            else
+                mc.Brain = NeuralNetwork.NewRandom();
+            cell.SetActive(true);
+
+            var mcs = FindObjectsOfType<MovementController>();
+            if (mcs.Length > 0)
+            {
+                avgGen = mcs.Average(c => c.Brain.generation);
+                Dashboard.UpdateCellAvgGen(avgGen);
+            }
         }
     }
 }

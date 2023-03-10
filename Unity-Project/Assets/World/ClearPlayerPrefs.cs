@@ -14,12 +14,6 @@ public class ClearPlayerPrefs : MonoBehaviour
         {
             DrawDefaultInspector();
 
-            if (GUILayout.Button("Clear PlayerPrefs"))
-            {
-                PlayerPrefs.DeleteAll();
-                Debug.Log("PlayerPrefs cleared.");
-            }
-
             if (GUILayout.Button("Clear Valhalla"))
             {
                 foreach (var metric in System.Enum.GetValues(typeof(Valhalla.Metric)))

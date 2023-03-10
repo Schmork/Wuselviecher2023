@@ -103,13 +103,14 @@ public class Valhalla : MonoBehaviour
         Dashboard.UpdateTimeSurvivedRecord(bestScores[Metric.TimeSurvived]);
         Dashboard.UpdateMassPerAction(bestScores[Metric.MassPerAction]);
         Dashboard.UpdateStraightMass(bestScores[Metric.StraightMass]);
+        Dashboard.UpdateCellMaxGen(OldestGen);
     }
 
     public void DecayScores()
     {
         for (int i = 0; i < bestScores.Count; i++)
         {
-            bestScores[(Metric)i] *= (1 - Dashboard.GetDecay());
+            bestScores[(Metric)i] *= (1 - Dashboard.Decay);
         }
         RefreshDashboard();
     }
@@ -123,6 +124,7 @@ public class Valhalla : MonoBehaviour
         }
 
         InitDictionaries();
+        RefreshDashboard();
 
         foreach (var metric in System.Enum.GetValues(typeof(Metric)))
         {
@@ -142,7 +144,7 @@ public class Valhalla : MonoBehaviour
             sum += chance[i];
         }
 
-        var rand = WorldConfig.Random.NextDouble() * sum;
+        var rand = Utility.Random.NextDouble() * sum;
 
         sum = 0;
         for (i = 0; i < chance.Length; i++)

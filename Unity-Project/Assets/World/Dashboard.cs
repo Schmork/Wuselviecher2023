@@ -1,69 +1,96 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using System.Globalization;
+using UnityEngine.EventSystems;
 
 public class Dashboard : MonoBehaviour
 {
-    private static Slider _decaySlider;
+    static Slider _decaySlider;
 
-    private static TMP_Text _distanceTravelledText;
-    private static TMP_Text _numEatenText;
-    private static TMP_Text _massEatenText;
-    private static TMP_Text _timeSurvivedText;
-    private static TMP_Text _massEatenAtSpeedText;
-    private static TMP_Text _fastestSpeedAchievedText;
-    private static TMP_Text _massPerActionText;
-    private static TMP_Text _straightMassText;
-    private static TMP_Text _cellCountText;
-    private static TMP_Text _cellMassText;
-    private static TMP_Text _cellMaxGenText;
-    private static TMP_Text _cellAvgGenText;
+    static TMP_Text _distanceTravelledText;
+    static TMP_Text _numEatenText;
+    static TMP_Text _massEatenText;
+    static TMP_Text _timeSurvivedText;
+    static TMP_Text _massEatenAtSpeedText;
+    static TMP_Text _fastestSpeedAchievedText;
+    static TMP_Text _massPerActionText;
+    static TMP_Text _straightMassText;
+    static TMP_Text _cellCountText;
+    static TMP_Text _cellMassText;
+    static TMP_Text _cellMaxGenText;
+    static TMP_Text _cellAvgGenText;
 
-    [SerializeField] private TMP_Text distanceTravelledText;
-    [SerializeField] private TMP_Text numEatenText;
-    [SerializeField] private TMP_Text massEatenText;
-    [SerializeField] private TMP_Text timeSurvivedText;
-    [SerializeField] private TMP_Text massEatenAtSpeedText;
-    [SerializeField] private TMP_Text fastestSpeedAchievedText;
-    [SerializeField] private TMP_Text massPerActionText;
-    [SerializeField] private TMP_Text straightMassText;
-    [SerializeField] private TMP_Text cellCountText;
-    [SerializeField] private TMP_Text cellMassText;
-    [SerializeField] private TMP_Text cellMaxGenText;
-    [SerializeField] private TMP_Text cellAvgGenText;
+    [SerializeField] TMP_Text distanceTravelledText;
+    [SerializeField] TMP_Text numEatenText;
+    [SerializeField] TMP_Text massEatenText;
+    [SerializeField] TMP_Text timeSurvivedText;
+    [SerializeField] TMP_Text massEatenAtSpeedText;
+    [SerializeField] TMP_Text fastestSpeedAchievedText;
+    [SerializeField] TMP_Text massPerActionText;
+    [SerializeField] TMP_Text straightMassText;
+    [SerializeField] TMP_Text cellCountText;
+    [SerializeField] TMP_Text cellMassText;
+    [SerializeField] TMP_Text cellMaxGenText;
+    [SerializeField] TMP_Text cellAvgGenText;
 
-    [SerializeField] private TMP_Text speedValue;
-    [SerializeField] private Slider speedSlider;
+    [SerializeField] TMP_Text speedValue;
+    [SerializeField] Slider speedSlider;
 
-    [SerializeField] private TMP_Text decayValue;
-    [SerializeField] private Slider decaySlider;
+    [SerializeField] TMP_Text decayValue;
+    [SerializeField] Slider decaySlider;
 
-    [SerializeField] private TMP_Text fenceValue;
-    [SerializeField] private Slider fenceSlider;
+    [SerializeField] TMP_Text fenceValue;
+    [SerializeField] Slider fenceSlider;
 
-    [SerializeField] private Slider 
-        vhDistanceTravelled, 
-        vhNumEaten, 
-        vhMassEaten, 
-        vhTimeSurvived, 
-        vhSpeedEaten, 
-        vhMaxSpeed, 
+    [SerializeField]
+    Slider
+        vhDistanceTravelled,
+        vhNumEaten,
+        vhMassEaten,
+        vhTimeSurvived,
+        vhSpeedEaten,
+        vhMaxSpeed,
         vhMassPerAction,
         vhStraightMass;
 
+    [SerializeField] Toggle toggleSpeed;
+
+    public static float Decay
+    {
+        get
+        {
+            return Mathf.Pow(10, -_decaySlider.value + 1);
+        }
+    }
+
     private void Awake()
     {
+        var eventTriggerPointerDown = new EventTrigger.Entry
+        {
+            eventID = EventTriggerType.PointerDown
+        };
+        eventTriggerPointerDown.callback.AddListener((data) => { toggleSpeed.isOn = false; });
+        speedSlider.GetComponent<EventTrigger>().triggers.Add(eventTriggerPointerDown);
         speedSlider.onValueChanged.AddListener((value) =>
         {
+            var str = "";
+            if (value < 10)
+            {
+                value /= 10f;
+                str = "F1";
+            }
+            else value -= 9;
+            if (value > 15) 
+                value = (int)Mathf.Pow(value, 1.2f) - 10;
+
             Time.timeScale = value;
-            speedValue.text = value.ToString("F2");
+            speedValue.text = value.ToString(str);
             PlayerPrefs.SetFloat("sim speed", value);
         });
 
         decaySlider.onValueChanged.AddListener((value) =>
         {
-            decayValue.text = CalcDecay(value).ToString("F7");
+            decayValue.text = Decay.ToString("F7");
             PlayerPrefs.SetFloat("decay", value);
         });
 
@@ -103,6 +130,14 @@ public class Dashboard : MonoBehaviour
         vhSpeedEaten.value = PlayerPrefs.GetFloat("chance" + Valhalla.Metric.MassEatenAtSpeed.ToString());
         vhTimeSurvived.value = PlayerPrefs.GetFloat("chance" + Valhalla.Metric.TimeSurvived.ToString());
         vhStraightMass.value = PlayerPrefs.GetFloat("chance" + Valhalla.Metric.StraightMass.ToString());
+    }
+
+    void Update()
+    {
+        if (!toggleSpeed.isOn) return;
+        var fps = 1f / Time.unscaledDeltaTime;
+        if (fps > 75) speedSlider.value++;
+        if (fps < 35 && speedSlider.value >= 10) speedSlider.value--;
     }
 
     public void VhDistanceTravelledChanged(float value)
@@ -150,16 +185,6 @@ public class Dashboard : MonoBehaviour
     {
         Valhalla.chance[(int)Valhalla.Metric.StraightMass] = value;
         PlayerPrefs.SetFloat("chance" + Valhalla.Metric.StraightMass.ToString(), value);
-    }
-
-    private static float CalcDecay(float value)
-    {
-        return Mathf.Pow(10, -value + 1);
-    }
-
-    public static float GetDecay()
-    {
-        return CalcDecay(_decaySlider.value);
     }
 
     public static void UpdateDistanceTravelledRecord(float value)

@@ -13,11 +13,13 @@ public class Layer : ICloneable
     public ActivationFunction[] NeuronFunctions;
     public float4[] NeuronBias;
     public float4[] Weights;
+    public float4[] Cache;
 
     public Layer(int neuronCount, int inputLength, ActivationFunction? function = null)
     {
         NeuronFunctions = new ActivationFunction[neuronCount];
         NeuronBias = new float4[neuronCount / 4];
+        Cache = new float4[neuronCount / 4];
         Weights = new float4[neuronCount * inputLength / 4];
 
         int i;
@@ -36,17 +38,18 @@ public class Layer : ICloneable
         }
     }
 
-    public Layer(float4[] weights, float4[] neuronBias, ActivationFunction[] neuronFunction)
+    public Layer(float4[] weights, float4[] neuronBias, float4[] cache, ActivationFunction[] neuronFunction)
     {
         NeuronFunctions = neuronFunction;
         NeuronBias = neuronBias;
         Weights = weights;
+        Cache = cache;
     }
 
     public static ActivationFunction RandomFunction()
     {
         var functions = Enum.GetValues(typeof(ActivationFunction)) as ActivationFunction[];
-        var randomIndex = 1 + WorldConfig.Random.Next(functions.Length - 1); // skip "INPUT"
+        var randomIndex = 1 + Utility.Random.NextInt(functions.Length - 1); // skip "INPUT"
         return functions[randomIndex];
     }
 
@@ -54,10 +57,10 @@ public class Layer : ICloneable
     {
         var initial = WorldConfig.Instance.InitialValues;
         return new float4(
-            (float)WorldConfig.Random.NextDouble() * initial - initial / 2f,
-            (float)WorldConfig.Random.NextDouble() * initial - initial / 2f,
-            (float)WorldConfig.Random.NextDouble() * initial - initial / 2f,
-            (float)WorldConfig.Random.NextDouble() * initial - initial / 2f
+            Utility.Gauss(initial),
+            Utility.Gauss(initial),
+            Utility.Gauss(initial),
+            Utility.Gauss(initial)
             );
     }
 
@@ -65,6 +68,7 @@ public class Layer : ICloneable
     {return new Layer(
             Weights.Clone() as float4[],
             NeuronBias.Clone() as float4[],
+            Cache.Clone() as float4[],
             NeuronFunctions.Clone() as ActivationFunction[]
             );
     }
@@ -148,6 +152,7 @@ public class Layer : ICloneable
             output[i].x = Activation.Evaluate(NeuronFunctions[i + 1], NeuronBias[i].x * sum);
             output[i].y = Activation.Evaluate(NeuronFunctions[i + 2], NeuronBias[i].y * sum);
             output[i].z = Activation.Evaluate(NeuronFunctions[i + 3], NeuronBias[i].z * sum);
+            Cache[i] = output[i];
         }
 
         return output;

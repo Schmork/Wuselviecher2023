@@ -9,7 +9,7 @@ public class SensorController : MonoBehaviour
     const float circleDetectionRadius = 12f;
     const float circleSizeComparisonSafety = 0.9f; // reduce own size in comparisons as safety margin
 
-    static readonly int numTrackedCellsPerSensor = 10;
+    static readonly int numTrackedCellsPerSensor = 6;
     public static readonly int numSensorValues = numTrackedCellsPerSensor * 3 * 2;     // numTracked * numValues (for both big & small)
                                                                                        // make sure numSensorValues % 4 == 0 so we can use float4 operations
 
@@ -37,6 +37,8 @@ public class SensorController : MonoBehaviour
     [BurstCompile]
     private float4[] ParseHits(Collider2D[] hits)
     {
+        var myPos = V3_to_float2(transform.position);
+
         int i;
         var nullTrans = new Trans
         {
@@ -75,11 +77,12 @@ public class SensorController : MonoBehaviour
             // find bigger
             if (hitScale > myScale * circleSizeComparisonSafety)
             {
-                if (hitScale > biggerQueue.Values[0].localScale)
+                var sqDist = math.distancesq(myPos, V3_to_float2(hit.transform.position));
+                if (sqDist < biggerQueue.Keys[0])
                 {
-                    while (biggerQueue.ContainsKey(hitScale)) hitScale += 0.000001f;
+                    while (biggerQueue.ContainsKey(sqDist)) sqDist += 0.000001f;
                     biggerQueue.RemoveAt(0);
-                    biggerQueue.Add(hitScale, new Trans(hit.transform, hit.attachedRigidbody.velocity));
+                    biggerQueue.Add(sqDist, new Trans(hit.transform, hit.attachedRigidbody.velocity));
                 }
             }
         }
@@ -108,10 +111,15 @@ public class SensorController : MonoBehaviour
         var results = new float[3];
         var futurePos = other.position + other.velocity * Time.deltaTime;
         results[0] = other.localScale / transform.localScale.x / 10f;
-        results[1] = math.distancesq(new float2(transform.position.x, transform.position.y), futurePos);
+        results[1] = math.distancesq(V3_to_float2(transform.position), futurePos);
         results[2]
             = (math.atan2(futurePos.y - transform.position.y, futurePos.x - transform.position.x)
             - math.atan2(transform.up.y, transform.up.x)) / math.PI;
         return results;
+    }
+
+    float2 V3_to_float2(Vector3 pos)
+    {
+        return new float2(pos.x, pos.y);
     }
 }

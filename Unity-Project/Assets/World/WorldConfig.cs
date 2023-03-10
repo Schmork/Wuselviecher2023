@@ -2,19 +2,6 @@ using UnityEngine;
 
 public class WorldConfig : MonoBehaviour
 {
-    private static System.Random random;
-    public static System.Random Random
-    {
-        get
-        {
-            if (random == null)
-            {
-                random = new System.Random();
-            }
-            return random;
-        }
-    }
-
     private static WorldConfig instance = null;
 
     public static WorldConfig Instance
@@ -42,18 +29,11 @@ public class WorldConfig : MonoBehaviour
         set { initialValues = value; }
     }
 
-    [SerializeField] private float cellSizeMin;
-    public float CellSizeMin
+    [SerializeField] private float cellSpawnSize;
+    public float CellSpawnSize
     {
-        get { return cellSizeMin; }
-        set { cellSizeMin = value; }
-    }
-
-    [SerializeField] private float cellSizeMax;
-    public float CellSizeMax
-    {
-        get { return cellSizeMax; }
-        set { cellSizeMax = value; }
+        get { return cellSpawnSize; }
+        set { cellSpawnSize = value; }
     }
 
     [SerializeField] private float deathBelowSize;
