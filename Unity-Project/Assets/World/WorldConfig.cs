@@ -22,6 +22,8 @@ public class WorldConfig : MonoBehaviour
         instance = this;
     }
 
+    public static float GaussMean;
+
     [SerializeField] private float initialValues;
     public float InitialValues
     {

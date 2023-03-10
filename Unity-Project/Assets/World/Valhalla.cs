@@ -101,8 +101,11 @@ public class Valhalla : MonoBehaviour
         Dashboard.UpdateCellMaxGen(OldestGen);
     }
 
-    public void DecayScores()
+    float lastDecay;
+    void Update()
     {
+        if (Time.time - lastDecay < 1) return;
+        lastDecay = Time.time;
         for (int i = 0; i < scores.Count; i++)
         {
             scores[(Metric)i] *= (1 - Dashboard.Decay);
@@ -131,7 +134,7 @@ public class Valhalla : MonoBehaviour
 
     public static float[] chance = new float[] { 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f };
 
-    public NeuralNetwork GetRandomHero()
+    public static NeuralNetwork GetRandomHero()
     {
         int i;
         var sum = 0f;

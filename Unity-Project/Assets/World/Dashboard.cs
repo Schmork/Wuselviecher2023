@@ -40,6 +40,9 @@ public class Dashboard : MonoBehaviour
     [SerializeField] TMP_Text fenceValue;
     [SerializeField] Slider fenceSlider;
 
+    [SerializeField] TMP_Text gaussValue;
+    [SerializeField] Slider gaussSlider;
+
     [SerializeField]
     Slider
         vhDistanceTravelled,
@@ -100,6 +103,13 @@ public class Dashboard : MonoBehaviour
             WorldConfig.Instance.FenceRadius = fence;
         });
 
+        gaussSlider.onValueChanged.AddListener((value) =>
+        {
+            WorldConfig.GaussMean = value;
+            gaussValue.text = value.ToString("F3");
+            PlayerPrefs.SetFloat("gauss", value);
+        });
+
         _distanceTravelledText = distanceTravelledText;
         _massEatenText = massEatenText;
         _timeSurvivedText = timeSurvivedText;
@@ -133,7 +143,7 @@ public class Dashboard : MonoBehaviour
         if (!toggleSpeed.isOn) return;
         var fps = 1f / Time.unscaledDeltaTime;
         if (fps > 75) speedSlider.value++;
-        if (fps < 35 && speedSlider.value >= 10) speedSlider.value--;
+        if (fps < 35 && speedSlider.value > 15) speedSlider.value--;
     }
 
     public void VhDistanceTravelledChanged(float value)

@@ -4,10 +4,6 @@ using UnityEngine;
 
 public class WorldController : MonoBehaviour
 {
-    Valhalla Valhalla;
-    [SerializeField] float ValhallaMutation;
-    [SerializeField] Vector2 DecayScoreTimes;
-
     [SerializeField] Vector2 CellSpawnTimes;
     [SerializeField] float CellSpawnRadius;
 
@@ -23,10 +19,7 @@ public class WorldController : MonoBehaviour
 
     void Start()
     {
-        Valhalla = GetComponent<Valhalla>();
-        Valhalla.RefreshDashboard();
         InvokeRepeating(nameof(Spawn), CellSpawnTimes.x, CellSpawnTimes.y);
-        InvokeRepeating(nameof(DecayScores), DecayScoreTimes.x, DecayScoreTimes.y);
     }
 
     GameObject GetPooledCell()
@@ -41,11 +34,6 @@ public class WorldController : MonoBehaviour
         tmp.SetActive(false);
         _pooledObjects.Add(tmp);
         return tmp;
-    }
-
-    void DecayScores()
-    {
-        Valhalla.DecayScores();
     }
 
     void Spawn()
@@ -81,7 +69,7 @@ public class WorldController : MonoBehaviour
             var hero = Valhalla.GetRandomHero();
             if (Random.value < 1 - 1 / (20 + avgGen * avgGen) && hero != null)
             {
-                mc.Brain = new NeuralNetwork(hero, ValhallaMutation);
+                mc.Brain = new NeuralNetwork(hero, WorldConfig.GaussMean);
                 if (mc.Brain.generation > Valhalla.OldestGen)
                 {
                     Valhalla.OldestGen = mc.Brain.generation;
