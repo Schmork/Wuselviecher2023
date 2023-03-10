@@ -10,7 +10,7 @@ public class MovementController : MonoBehaviour
     float4[] inputs;
 
     public NeuralNetwork Brain;
-    float4[] sensorData;
+    float4[] sensorData = new float4[0];
     float4 actions;
     float lastSensorUse;
     float lastBrainUse;
@@ -46,11 +46,10 @@ public class MovementController : MonoBehaviour
             Vector2.Dot(rb.velocity, transform.up),
             System.MathF.Tanh(rb.angularVelocity / 900f)
             );
-
-        if (Time.time - lastSensorUse > actions.y)
+        if (lastSensorUse > actions.y)
         {
             sensorData = sensors.Scan();
-            lastSensorUse = Time.time;
+            lastSensorUse = 0;
             sc.Size -= sensorPrice;
         }
         for (i = 0; i < sensorData.Length; i++)
@@ -58,12 +57,15 @@ public class MovementController : MonoBehaviour
             inputs[n++] = sensorData[i];
         }
 
-        if (Time.time - lastBrainUse > actions.z)
+        if (lastBrainUse > actions.z)
         {
             actions = Brain.FeedForward(inputs)[0];
-            lastBrainUse = Time.time;
+            lastBrainUse = 0;
             sc.Size -= brainPrice;
         }
+
+        lastSensorUse += Time.deltaTime;
+        lastBrainUse += Time.deltaTime;
 
         sc.Size -= Mathf.Abs(actions.w) * sc.Size * Time.deltaTime / 5000f;
         sc.Size -= Mathf.Abs(actions.x) * sc.Size * Time.deltaTime / 20f / Mathf.Sqrt(rb.velocity.magnitude + 1);
