@@ -8,7 +8,6 @@ public class Dashboard : MonoBehaviour
     static Slider _decaySlider;
 
     static TMP_Text _distanceTravelledText;
-    static TMP_Text _numEatenText;
     static TMP_Text _massEatenText;
     static TMP_Text _timeSurvivedText;
     static TMP_Text _massEatenAtSpeedText;
@@ -21,7 +20,6 @@ public class Dashboard : MonoBehaviour
     static TMP_Text _cellAvgGenText;
 
     [SerializeField] TMP_Text distanceTravelledText;
-    [SerializeField] TMP_Text numEatenText;
     [SerializeField] TMP_Text massEatenText;
     [SerializeField] TMP_Text timeSurvivedText;
     [SerializeField] TMP_Text massEatenAtSpeedText;
@@ -103,7 +101,6 @@ public class Dashboard : MonoBehaviour
         });
 
         _distanceTravelledText = distanceTravelledText;
-        _numEatenText = numEatenText;
         _massEatenText = massEatenText;
         _timeSurvivedText = timeSurvivedText;
         _massEatenAtSpeedText = massEatenAtSpeedText;
@@ -126,7 +123,6 @@ public class Dashboard : MonoBehaviour
         vhMassEaten.value = PlayerPrefs.GetFloat("chance" + Valhalla.Metric.MassEaten.ToString());
         vhMassPerAction.value = PlayerPrefs.GetFloat("chance" + Valhalla.Metric.MassPerAction.ToString());
         vhMaxSpeed.value = PlayerPrefs.GetFloat("chance" + Valhalla.Metric.FastestSpeedAchieved.ToString());
-        vhNumEaten.value = PlayerPrefs.GetFloat("chance" + Valhalla.Metric.NumEaten.ToString());
         vhSpeedEaten.value = PlayerPrefs.GetFloat("chance" + Valhalla.Metric.MassEatenAtSpeed.ToString());
         vhTimeSurvived.value = PlayerPrefs.GetFloat("chance" + Valhalla.Metric.TimeSurvived.ToString());
         vhStraightMass.value = PlayerPrefs.GetFloat("chance" + Valhalla.Metric.StraightMass.ToString());
@@ -144,12 +140,6 @@ public class Dashboard : MonoBehaviour
     {
         Valhalla.chance[(int)Valhalla.Metric.DistanceTravelled] = value;
         PlayerPrefs.SetFloat("chance" + Valhalla.Metric.DistanceTravelled.ToString(), value);
-    }
-
-    public void VhNumEatenChanged(float value)
-    {
-        Valhalla.chance[(int)Valhalla.Metric.NumEaten] = value;
-        PlayerPrefs.SetFloat("chance" + Valhalla.Metric.NumEaten.ToString(), value);
     }
 
     public void VhMassEatenChanged(float value)
@@ -190,11 +180,6 @@ public class Dashboard : MonoBehaviour
     public static void UpdateDistanceTravelledRecord(float value)
     {
         _distanceTravelledText.text = value.ToString("F2");
-    }
-
-    public static void UpdateNumEatenRecord(int value)
-    {
-        _numEatenText.text = value.ToString();
     }
 
     public static void UpdateMassEatenRecord(float value)

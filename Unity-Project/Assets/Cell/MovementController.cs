@@ -30,8 +30,8 @@ public class MovementController : MonoBehaviour
     void Update()
     {
         if (transform.position.magnitude > WorldConfig.Instance.FenceRadius * math.sqrt(10 + sc.Size)) gameObject.SetActive(false);
-        if (rb.velocity.magnitude > stats.FastestSpeedAchieved) stats.FastestSpeedAchieved = rb.velocity.magnitude;
-        stats.DistanceTravelled += rb.velocity.magnitude / sc.Size * Time.deltaTime;
+        stats.UpdateScore(Valhalla.Metric.FastestSpeedAchieved, rb.velocity.magnitude);
+        stats.AddToScore(Valhalla.Metric.DistanceTravelled, rb.velocity.magnitude / sc.Size * Time.deltaTime);
 
         int i;
         int n = 0;
@@ -40,18 +40,21 @@ public class MovementController : MonoBehaviour
             inputs[n] = Brain.Layers[Brain.Memory[i].x].Cache[Brain.Memory[i].y];
             if (i / 4 > 0 && i % 4 == 0) n++;
         }
+
         inputs[n++] = new float4(
             sc.Size / 100f,
             rb.velocity.magnitude / 10f,
             Vector2.Dot(rb.velocity, transform.up),
             System.MathF.Tanh(rb.angularVelocity / 900f)
             );
+
         if (lastSensorUse > actions.y)
         {
             sensorData = sensors.Scan();
             lastSensorUse = 0;
             sc.Size -= sensorPrice;
         }
+
         for (i = 0; i < sensorData.Length; i++)
         {
             inputs[n++] = sensorData[i];
@@ -67,12 +70,9 @@ public class MovementController : MonoBehaviour
         lastSensorUse += Time.deltaTime;
         lastBrainUse += Time.deltaTime;
 
-        sc.Size -= Mathf.Abs(actions.w) * sc.Size * Time.deltaTime / 5000f;
-        sc.Size -= Mathf.Abs(actions.x) * sc.Size * Time.deltaTime / 20f / Mathf.Sqrt(rb.velocity.magnitude + 1);
-
         if (actions.w < 0) return;
 
-        var torque = 50f / Mathf.Pow(sc.Size + 1, 0.6f);// / (Mathf.Abs(rb.angularVelocity) + 0.0001f);
+        var torque = 50f / Mathf.Pow(sc.Size + 1, 0.6f);
         var thrust = 50f * sc.Size;
 
         if (actions.w > 0.01) stats.ActionsTaken++;

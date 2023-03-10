@@ -10,7 +10,6 @@ public class Valhalla : MonoBehaviour
     public enum Metric
     {
         DistanceTravelled,
-        NumEaten,
         MassEaten,
         TimeSurvived,
         MassEatenAtSpeed,
@@ -19,48 +18,48 @@ public class Valhalla : MonoBehaviour
         StraightMass
     }
 
-    private Dictionary<Metric, NeuralNetwork> fallenHeroes;
-    private Dictionary<Metric, float> bestScores;
+    private static Dictionary<Metric, NeuralNetwork> heroes;
+    private static Dictionary<Metric, float> scores;
     public static int OldestGen = 0;
 
     public void OnEnable()
     {
         InitDictionaries();
-        LoadFallenHeroesFromPrefs();
+        LoadHeroesFromPrefs();
     }
 
     void InitDictionaries()
     {
-        fallenHeroes = new Dictionary<Metric, NeuralNetwork>();
-        bestScores = new Dictionary<Metric, float>();
+        heroes = new Dictionary<Metric, NeuralNetwork>();
+        scores = new Dictionary<Metric, float>();
         foreach (Metric metric in System.Enum.GetValues(typeof(Metric)))
         {
-            fallenHeroes[metric] = null;
-            bestScores[metric] = 0;
+            heroes[metric] = null;
+            scores[metric] = 0;
         }
     }
 
-    public void LoadFallenHeroesFromPrefs()
+    public void LoadHeroesFromPrefs()
     {
         foreach (Metric metric in System.Enum.GetValues(typeof(Metric)))
         {
             string networkJson = PlayerPrefs.GetString(VHERO + metric.ToString(), null);
             if (networkJson == null) return;
-            fallenHeroes[metric] = JsonUtility.FromJson<NeuralNetwork>(networkJson);
+            heroes[metric] = JsonUtility.FromJson<NeuralNetwork>(networkJson);
             var scoreStr = PlayerPrefs.GetString(VSCOR + metric.ToString(), null);
             if (scoreStr == "") continue;
-            bestScores[metric] = float.Parse(scoreStr, CultureInfo.InvariantCulture);
+            scores[metric] = float.Parse(scoreStr, CultureInfo.InvariantCulture);
         }
     }
 
-    public void AddFallenHero(NeuralNetwork network, float score, Metric metricType)
+    public static void AddHero(NeuralNetwork network, Metric metric, float score)
     {
-        if (score <= bestScores[metricType] || network == null) return;
+        if (score < scores[metric]) return;
 
-        fallenHeroes[metricType] = network;
-        bestScores[metricType] = score;
+        heroes[metric] = network;
+        scores[metric] = score;
 
-        switch (metricType)
+        switch (metric)
         {
             case Metric.DistanceTravelled:
                 Dashboard.UpdateDistanceTravelledRecord(score);
@@ -74,9 +73,6 @@ public class Valhalla : MonoBehaviour
             case Metric.MassEatenAtSpeed:
                 Dashboard.UpdateMassEatenAtSpeedRecord(score);
                 break;
-            case Metric.NumEaten:
-                Dashboard.UpdateNumEatenRecord((int)score);
-                break;
             case Metric.TimeSurvived:
                 Dashboard.UpdateTimeSurvivedRecord(score);
                 break;
@@ -88,29 +84,28 @@ public class Valhalla : MonoBehaviour
                 break;
         }
 
-        PlayerPrefs.SetString(VHERO + metricType.ToString(), JsonUtility.ToJson(network));
-        PlayerPrefs.SetString(VSCOR + metricType.ToString(),
-            bestScores[metricType].ToString(CultureInfo.InvariantCulture));
+        PlayerPrefs.SetString(VHERO + metric.ToString(), JsonUtility.ToJson(network));
+        PlayerPrefs.SetString(VSCOR + metric.ToString(),
+            scores[metric].ToString(CultureInfo.InvariantCulture));
     }
 
     public void RefreshDashboard()
     {
-        Dashboard.UpdateDistanceTravelledRecord(bestScores[Metric.DistanceTravelled]);
-        Dashboard.UpdateFastestSpeedAchievedRecord(bestScores[Metric.FastestSpeedAchieved]);
-        Dashboard.UpdateMassEatenAtSpeedRecord(bestScores[Metric.MassEatenAtSpeed]);
-        Dashboard.UpdateMassEatenRecord(bestScores[Metric.MassEaten]);
-        Dashboard.UpdateNumEatenRecord((int)bestScores[Metric.NumEaten]);
-        Dashboard.UpdateTimeSurvivedRecord(bestScores[Metric.TimeSurvived]);
-        Dashboard.UpdateMassPerAction(bestScores[Metric.MassPerAction]);
-        Dashboard.UpdateStraightMass(bestScores[Metric.StraightMass]);
+        Dashboard.UpdateDistanceTravelledRecord(scores[Metric.DistanceTravelled]);
+        Dashboard.UpdateFastestSpeedAchievedRecord(scores[Metric.FastestSpeedAchieved]);
+        Dashboard.UpdateMassEatenAtSpeedRecord(scores[Metric.MassEatenAtSpeed]);
+        Dashboard.UpdateMassEatenRecord(scores[Metric.MassEaten]);
+        Dashboard.UpdateTimeSurvivedRecord(scores[Metric.TimeSurvived]);
+        Dashboard.UpdateMassPerAction(scores[Metric.MassPerAction]);
+        Dashboard.UpdateStraightMass(scores[Metric.StraightMass]);
         Dashboard.UpdateCellMaxGen(OldestGen);
     }
 
     public void DecayScores()
     {
-        for (int i = 0; i < bestScores.Count; i++)
+        for (int i = 0; i < scores.Count; i++)
         {
-            bestScores[(Metric)i] *= (1 - Dashboard.Decay);
+            scores[(Metric)i] *= (1 - Dashboard.Decay);
         }
         RefreshDashboard();
     }
@@ -123,6 +118,7 @@ public class Valhalla : MonoBehaviour
             cells[i].gameObject.SetActive(false);
         }
 
+        OldestGen = 0;
         InitDictionaries();
         RefreshDashboard();
 
@@ -133,7 +129,7 @@ public class Valhalla : MonoBehaviour
         }
     }
 
-    public static float[] chance = new float[] { 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f };
+    public static float[] chance = new float[] { 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f };
 
     public NeuralNetwork GetRandomHero()
     {
@@ -150,11 +146,11 @@ public class Valhalla : MonoBehaviour
         for (i = 0; i < chance.Length; i++)
         {
             sum += chance[i];
-            if (rand < sum) return fallenHeroes[(Metric)i];
+            if (rand < sum) return heroes[(Metric)i];
         }
 
         var metrics = System.Enum.GetValues(typeof(Metric));
         Metric randomMetric = (Metric)metrics.GetValue(Random.Range(0, metrics.Length));
-        return fallenHeroes[randomMetric];
+        return heroes[randomMetric];
     }
 }

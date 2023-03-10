@@ -76,7 +76,6 @@ public class WorldController : MonoBehaviour
                 0.6f, 1,
                 1, 1);
             cell.GetComponent<SizeController>().Size = WorldConfig.Instance.CellSpawnSize;
-            cell.GetComponent<StatsCollector>().Valhalla = Valhalla;
 
             var mc = cell.GetComponent<MovementController>();
             var hero = Valhalla.GetRandomHero();
