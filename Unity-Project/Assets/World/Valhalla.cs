@@ -126,9 +126,6 @@ public class Valhalla : MonoBehaviour
             sum += metricChanceForRandomHero[i];
             if (rand < sum) return heroes[(Metric)i];
         }
-
-        var metrics = System.Enum.GetValues(typeof(Metric));
-        Metric randomMetric = (Metric)metrics.GetValue(Random.Range(0, metrics.Length));
-        return heroes[randomMetric];
+        return NeuralNetwork.NewRandom();
     }
 }

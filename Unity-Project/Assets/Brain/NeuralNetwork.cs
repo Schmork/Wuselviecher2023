@@ -10,19 +10,18 @@ public class NeuralNetwork : System.ICloneable
     public List<Layer> Layers;
     public int generation;
 
-    public static readonly int numInputs = 64;   // 4 self, + sensors + memory
+    public static readonly int numInputs = 48;   // 4 self, + sensors + memory
     public int2[] Memory = new int2[numInputs - SensorController.numSensorValues - 4];     // x = layer, y = neuron index
 
     public static NeuralNetwork NewRandom()
     {
-        var nn = new NeuralNetwork();
-
-        var numOutputs = 4;
-        var numHidden = 32;// (numInputs + numOutputs) / 2;
-
-        nn.Layers = new List<Layer>() { new Layer(numInputs, 0, ActivationFunction.Identity) };
-        nn.AddLayer(numHidden);
-        nn.AddLayer(numOutputs);
+        var nn = new NeuralNetwork
+        {
+            Layers = new List<Layer>() { new Layer(numInputs, 0, ActivationFunction.Identity) }
+        };
+        nn.AddLayer(32);
+        nn.AddLayer(12);
+        nn.AddLayer(4);
 
         nn.generation = 0;
 
@@ -34,7 +33,7 @@ public class NeuralNetwork : System.ICloneable
         return nn;
     }
 
-    public NeuralNetwork() { }
+    NeuralNetwork() { }
 
     public NeuralNetwork(NeuralNetwork parent, float mutation = 0.01f)
     {

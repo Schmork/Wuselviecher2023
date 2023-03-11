@@ -7,7 +7,10 @@ public enum ActivationFunction
     Sigmoid,
     TanH,
     Gaussian,
-    Sine
+    Sine, 
+    Cos,
+    LeakyReLU,
+    ArcTan
 }
 
 [BurstCompile]
@@ -23,6 +26,9 @@ public static class Activation
             ActivationFunction.TanH => math.tanh(x),
             ActivationFunction.Gaussian => math.exp(-(math.lengthsq(x))),
             ActivationFunction.Sine => math.sin(x),
+            ActivationFunction.Cos => math.cos(x),
+            ActivationFunction.LeakyReLU => math.max(0.01f * x, x),
+            ActivationFunction.ArcTan => math.atan(x),
             _ => throw new System.ArgumentException("Unknown activation function"),
         };
     }
