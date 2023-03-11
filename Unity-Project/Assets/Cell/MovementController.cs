@@ -73,8 +73,8 @@ public class MovementController : MonoBehaviour
             stats.ActionsTaken++;
         }
 
-        var thrust = actions.w * 50f * sc.Size;
-        var torque = actions.x * 50f / Mathf.Pow(sc.Size + 1, 0.6f);
+        var thrust = actions.w * 40f * sc.Size;
+        var torque = actions.x * 40f / Mathf.Pow(sc.Size + 1, 0.6f);
 
         rb.AddForce(thrust * Time.deltaTime * transform.up);
         rb.AddTorque(torque * Time.deltaTime);
