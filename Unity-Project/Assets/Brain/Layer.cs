@@ -1,50 +1,38 @@
-﻿using Unity.Burst;
-using System;
+﻿using System;
+using Unity.Burst;
 using Unity.Mathematics;
 
 [BurstCompile]
 [Serializable]
 public class Layer : ICloneable
 {
-    public ActivationFunction[] NeuronFunctions;
-    public float4[] NeuronBias;
+    public ActivationFunction[] Functions;
+    public float4[] Biases;
     public float4[] Weights;
-    public float4[] Cache;
+    public float4[] Memory;
 
     public Layer(int neuronCount, int inputLength, ActivationFunction? function = null)
     {
-        NeuronFunctions = new ActivationFunction[neuronCount];
-        NeuronBias = new float4[neuronCount / 4];
-        Cache = new float4[neuronCount / 4];
+        Functions = new ActivationFunction[neuronCount];
+        Biases = new float4[neuronCount / 4];
+        Memory = new float4[neuronCount / 4];
         Weights = new float4[neuronCount * inputLength / 4];
 
         int i;
-        for (i = 0; i < NeuronBias.Length; i++)
+        for (i = 0; i < Biases.Length; i++)
         {
-            NeuronBias[i] = RandomInitialValue();
-            NeuronFunctions[i + 0] = function == null ? RandomFunction() : (ActivationFunction)function;
-            NeuronFunctions[i + 1] = function == null ? RandomFunction() : (ActivationFunction)function;
-            NeuronFunctions[i + 2] = function == null ? RandomFunction() : (ActivationFunction)function;
-            NeuronFunctions[i + 3] = function == null ? RandomFunction() : (ActivationFunction)function;
+            Biases[i] = RandomInitialValue();
+            for (int j = 0; j < 4; j++)
+                Functions[i + j] = function == null ? RandomFunction() : (ActivationFunction)function;
         }
         for (i = 0; i < Weights.Length; i++)
-        {
             Weights[i] = RandomInitialValue();
-        }
-    }
-
-    public Layer(float4[] weights, float4[] neuronBias, float4[] cache, ActivationFunction[] neuronFunction)
-    {
-        NeuronFunctions = neuronFunction;
-        NeuronBias = neuronBias;
-        Weights = weights;
-        Cache = cache;
     }
 
     public static ActivationFunction RandomFunction()
     {
         var functions = Enum.GetValues(typeof(ActivationFunction)) as ActivationFunction[];
-        var randomIndex = Utility.Random.NextInt(functions.Length - 1);
+        var randomIndex = Utility.Random.NextInt(functions.Length);
         return functions[randomIndex];
     }
 
@@ -58,48 +46,50 @@ public class Layer : ICloneable
             );
     }
 
-    public object Clone()
+    [BurstCompile]
+    public float4[] FeedForwardInput(float4[] input)
     {
-        return new Layer(
-               Weights.Clone() as float4[],
-               NeuronBias.Clone() as float4[],
-               Cache.Clone() as float4[],
-               NeuronFunctions.Clone() as ActivationFunction[]
-               );
+        float4[] output = new float4[Biases.Length];
+        for (int i = 0; i < Biases.Length; i++)
+            output[i] = Biases[i] + input[i];
+        return output;
     }
 
     [BurstCompile]
     public float4[] FeedForward(float4[] input)
     {
-        float4[] output = new float4[NeuronBias.Length];
-
         float sum;
-        for (int i = 0; i < NeuronBias.Length; i++)
+        float4[] output = new float4[Biases.Length];
+        for (int i = 0; i < Biases.Length; i++)
         {
-            var weightSum = NeuronBias[i];
+            var weightSum = Biases[i];
             for (int j = 0; j < input.Length; j++)
-            {
                 weightSum += Weights[i * input.Length + j] * input[j];
-            }
             sum = math.csum(weightSum);
-            output[i].w = Activation.Evaluate(NeuronFunctions[i + 0], sum);
-            output[i].x = Activation.Evaluate(NeuronFunctions[i + 1], sum);
-            output[i].y = Activation.Evaluate(NeuronFunctions[i + 2], sum);
-            output[i].z = Activation.Evaluate(NeuronFunctions[i + 3], sum);
-            Cache[i] = output[i];
+            output[i].w = Activation.Evaluate(Functions[i + 0], sum);
+            output[i].x = Activation.Evaluate(Functions[i + 1], sum);
+            output[i].y = Activation.Evaluate(Functions[i + 2], sum);
+            output[i].z = Activation.Evaluate(Functions[i + 3], sum);
+            Memory[i] = output[i];
         }
-
         return output;
     }
 
-    [BurstCompile]
-    public float4[] FeedForwardInput(float4[] input)
+    Layer(float4[] memory, float4[] weights, float4[] biases, ActivationFunction[] functions)
     {
-        float4[] output = new float4[NeuronBias.Length];
-        for (int i = 0; i < NeuronBias.Length; i++)
-        {
-            output[i] = NeuronBias[i] + input[i];
-        }
-        return output;
+        Memory = memory;
+        Weights = weights;
+        Biases = biases;
+        Functions = functions;
+    }
+
+    public object Clone()
+    {
+        return new Layer(
+               Memory.Clone() as float4[],
+               Weights.Clone() as float4[],
+               Biases.Clone() as float4[],
+               Functions.Clone() as ActivationFunction[]
+               );
     }
 }

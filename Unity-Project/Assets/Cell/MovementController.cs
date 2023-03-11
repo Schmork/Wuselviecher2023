@@ -1,6 +1,6 @@
+using UnityEngine;
 using Unity.Burst;
 using Unity.Mathematics;
-using UnityEngine;
 
 [BurstCompile]
 public class MovementController : MonoBehaviour
@@ -17,8 +17,8 @@ public class MovementController : MonoBehaviour
     float lastSensorUse;
     float lastBrainUse;
 
-    static readonly float brainPrice = 0.0003f;             // based on rough Stopwatch measurements 
-    static readonly float sensorPrice = brainPrice * 5;     // based on rough Stopwatch measurements 
+    static readonly float brainPrice = 0.0001f;             // based on rough Stopwatch measurements 
+    static readonly float sensorPrice = brainPrice * 6.4f;  // based on rough Stopwatch measurements 
 
     void OnEnable()
     {
@@ -39,7 +39,7 @@ public class MovementController : MonoBehaviour
         int n = 0;
         for (i = 0; i < Brain.Memory.Length; i++)
         {
-            inputs[n] = Brain.Layers[Brain.Memory[i].x].Cache[Brain.Memory[i].y];
+            inputs[n] = Brain.Layers[Brain.Memory[i].x].Memory[Brain.Memory[i].y];
             if (i / 4 > 0 && i % 4 == 0) n++;
         }
 
@@ -73,7 +73,7 @@ public class MovementController : MonoBehaviour
             stats.ActionsTaken++;
         }
 
-        var thrust = actions.w * 40f * sc.Size;
+        var thrust = actions.w * 40f * math.sqrt(sc.Size);
         var torque = actions.x * 40f / Mathf.Pow(sc.Size + 1, 0.6f);
 
         rb.AddForce(thrust * Time.deltaTime * transform.up);

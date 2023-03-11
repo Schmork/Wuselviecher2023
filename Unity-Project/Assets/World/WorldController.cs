@@ -67,17 +67,18 @@ public class WorldController : MonoBehaviour
 
         var mc = cell.GetComponent<MovementController>();
         var hero = Valhalla.GetRandomHero();
-        if (Random.value < 1 - 1 / (20 + avgGen * avgGen) && hero != null)
+
+        if (hero == null || Random.value < 1 / (20 + avgGen * avgGen))
+            mc.Brain = NeuralNetwork.NewRandom();
+        else 
         {
-            mc.Brain = new NeuralNetwork(hero, WorldConfig.GaussStd);
+            mc.Brain = hero.Mutate(WorldConfig.GaussStd);
             if (mc.Brain.generation > Valhalla.OldestGen)
             {
                 Valhalla.OldestGen = mc.Brain.generation;
                 Dashboard.UpdateCellMaxGen(Valhalla.OldestGen);
             }
         }
-        else
-            mc.Brain = NeuralNetwork.NewRandom();
         cell.SetActive(true);
 
         var mcs = FindObjectsOfType<MovementController>();
