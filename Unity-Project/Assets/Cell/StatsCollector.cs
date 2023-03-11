@@ -3,7 +3,8 @@ using UnityEngine;
 
 public class StatsCollector : MonoBehaviour
 {
-    NeuralNetwork NeuralNetwork;
+    [SerializeField] SizeController sc;
+    [SerializeField] MovementController mc;
 
     Dictionary<Valhalla.Metric, float> scores;
 
@@ -21,14 +22,14 @@ public class StatsCollector : MonoBehaviour
     public void AddToScore(Valhalla.Metric key, float value)
     {
         scores[key] += value;
-        Valhalla.AddHero(NeuralNetwork, key, scores[key]);
+        Valhalla.AddHero(mc.Brain, key, scores[key]);
     }
 
     public void UpdateScore(Valhalla.Metric key, float value)
     {
         if (value > scores[key])
         {
-            Valhalla.AddHero(NeuralNetwork, key, value);
+            Valhalla.AddHero(mc.Brain, key, value);
         }
         scores[key] = value;
     }
@@ -40,11 +41,10 @@ public class StatsCollector : MonoBehaviour
         {
             scores.Add(metric, 0f);
         }
-        NeuralNetwork = GetComponent<MovementController>().Brain;
     }
 
     void Update()
     {
-        AddToScore(Valhalla.Metric.TimeSurvived, Time.deltaTime);
+        AddToScore(Valhalla.Metric.TimeSurvived, Time.deltaTime * sc.Size / 100f);
     }
 }

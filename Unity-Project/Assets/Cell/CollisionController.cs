@@ -2,49 +2,36 @@ using UnityEngine;
 
 public class CollisionController : MonoBehaviour
 {
-    SizeController sc;
-    public Rigidbody2D Rb;
-    SpriteRenderer rendr;
-    ParticleSystem.MainModule psMain;
-    StatsCollector stats;
-
-    private void Start()
-    {
-        sc = GetComponent<SizeController>();
-        rendr = GetComponent<SpriteRenderer>();
-        stats = GetComponent<StatsCollector>();
-        psMain = GetComponent<ParticleSystem>().main;
-        psMain.startColor = rendr.material.color;
-    }
+    [SerializeField] SizeController sc;
+    [SerializeField] Rigidbody2D Rb;
+    [SerializeField] SpriteRenderer rendr;
+    [SerializeField] StatsCollector stats;
 
     private void OnTriggerStay2D(Collider2D collider)
     {
         if (!collider.CompareTag("Edible")) return;
 
-        var size = sc.Size;
-
         var other = collider.GetComponent<SizeController>();
-        if (other.Size > size) return;
-        var diff = size / 30f;
+        if (other.Size > sc.Size) return;
+        var diff = sc.Size / 30f;
         if (other.Size < diff) diff = other.Size;
 
         var col1 = rendr.material.color;
         var col2 = other.GetComponent<SpriteRenderer>().material.color;
-        var col = MixColors(col1, col2, diff / size);
+        var col = MixColors(col1, col2, diff / sc.Size);
         rendr.material.color = col;
-        psMain.startColor = col;
 
         sc.Size += diff;
         other.Size -= diff;
 
-        stats.AddToScore(Valhalla.Metric.MassEatenAtSpeed, 0.1f + diff / sc.Size * (0.01f + Mathf.Sqrt(Rb.velocity.magnitude * Time.deltaTime)));
-        stats.AddToScore(Valhalla.Metric.MassEaten, diff / sc.Size);
-        stats.AddToScore(Valhalla.Metric.StraightMass, diff / sc.Size / Mathf.Exp(Mathf.Abs(Rb.angularVelocity * Time.deltaTime)));
+        stats.AddToScore(Valhalla.Metric.MassEatenAtSpeed, diff * (0.01f + Mathf.Sqrt(Rb.velocity.magnitude * Time.deltaTime)));
+        stats.AddToScore(Valhalla.Metric.MassEaten, diff);
+        stats.AddToScore(Valhalla.Metric.StraightMass, diff / Mathf.Exp(Mathf.Abs(Rb.angularVelocity * Time.deltaTime)));
 
         var otherCc = collider.GetComponent<CollisionController>();
         if (otherCc == null) return;
         Rb.AddForce(otherCc.Rb.velocity * other.Size * Time.deltaTime);
-        otherCc.Rb.AddForce(Rb.velocity * size * Time.deltaTime);
+        otherCc.Rb.AddForce(Rb.velocity * sc.Size * Time.deltaTime);
     }
 
     private Color MixColors(Color color1, Color color2, float ratio)

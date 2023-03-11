@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class SizeController : MonoBehaviour
 {
-    Rigidbody2D rb;
+    [SerializeField] Rigidbody2D rb;
 
     [SerializeField] float size;
     public float Size
@@ -25,11 +25,6 @@ public class SizeController : MonoBehaviour
     public float Size2Scale()
     {
         return Mathf.Pow(Size, 0.5f);
-    }
-
-    void Awake()
-    {
-        rb = GetComponent<Rigidbody2D>();
     }
 
     void Update()

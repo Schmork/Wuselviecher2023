@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Burst;
 using Unity.Mathematics;
-using Random = UnityEngine.Random;
 
+[BurstCompile]
 [System.Serializable]
 public class NeuralNetwork : System.ICloneable
 {
@@ -22,9 +23,6 @@ public class NeuralNetwork : System.ICloneable
         nn.Layers = new List<Layer>() { new Layer(numInputs, 0, ActivationFunction.Identity) };
         nn.AddLayer(numHidden);
         nn.AddLayer(numOutputs);
-
-        nn.Layers[^1].NeuronFunctions[0] = ActivationFunction.TanH;
-        nn.Layers[^1].NeuronFunctions[1] = ActivationFunction.Sigmoid;
 
         nn.generation = 0;
 
@@ -56,11 +54,11 @@ public class NeuralNetwork : System.ICloneable
 
     private static void RandomMemory(NeuralNetwork nn, int i)
     {
-        var l = Random.Range(0, nn.Layers.Count);
+        var l = Utility.Random.NextInt(nn.Layers.Count);
         int n;
         do
         {
-            n = Random.Range(0, nn.Layers[l].NeuronBias.Length);
+            n = Utility.Random.NextInt(nn.Layers[l].NeuronBias.Length);
         } while (l == 0 && n >= nn.Memory.Length);      // don't wire memory to itself
         nn.Memory[i] = new int2(l, n);
     }
@@ -81,10 +79,11 @@ public class NeuralNetwork : System.ICloneable
         { MutationType.FUNCTION, 1 }
     };
 
+    [BurstCompile]
     void Mutate(float mutation)
     {
         var totalWeight = mutations.Values.Sum();
-        var random = Random.value * totalWeight;
+        var random = Utility.Random.NextFloat(totalWeight);
         var mutationType = MutationType.WEIGHT;
         var sum = 0;
         foreach (var mut in mutations)
@@ -104,32 +103,31 @@ public class NeuralNetwork : System.ICloneable
             case MutationType.BIAS:
                 for (int n = 0; n < 2; n++)
                 {
-                    layer = Layers[Random.Range(0, Layers.Count)];
-                    i = Random.Range(0, layer.NeuronBias.Length);
+                    layer = Layers[Utility.Random.NextInt(Layers.Count)];
+                    i = Utility.Random.NextInt(layer.NeuronBias.Length);
                     layer.NeuronBias[i] += Utility.Gauss(mutation);
                 }
                 break;
             case MutationType.WEIGHT:
-                layer = Layers[Random.Range(1, Layers.Count)];
-                i = Random.Range(0, layer.Weights.Length);
+                layer = Layers[1 + Utility.Random.NextInt(Layers.Count - 1)];
+                i = Utility.Random.NextInt(layer.Weights.Length);
                 layer.Weights[i] += Utility.Gauss(mutation);
                 break;
             case MutationType.MEMORY:
-                i = Random.Range(0, Memory.Length);
+                i = Utility.Random.NextInt(Memory.Length);
                 RandomMemory(this, i);
                 break;
             case MutationType.FUNCTION:
-                layer = Layers[Random.Range(1, Layers.Count)];
-                i = Random.Range(0, layer.NeuronFunctions.Length);
+                layer = Layers[1 + Utility.Random.NextInt(Layers.Count - 1)];
+                i = Utility.Random.NextInt(layer.NeuronFunctions.Length);
                 layer.NeuronFunctions[i] = Layer.RandomFunction();
-                Layers[^1].NeuronFunctions[0] = ActivationFunction.TanH;
-                Layers[^1].NeuronFunctions[1] = ActivationFunction.Sigmoid;
                 break;
             default:
                 break;
         }
     }
 
+    [BurstCompile]
     public float4[] FeedForward(float4[] input)
     {
         int i;
