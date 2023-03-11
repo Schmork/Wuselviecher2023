@@ -3299,9 +3299,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f36677ad606ed841b84b61befaf773a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  initialValues: 5
   cellSpawnSize: 8
-  deathBelowSize: 0.2
+  deathBelowSize: 0.3
   fenceRadius: 235
 --- !u!114 &413936426
 MonoBehaviour:
@@ -5677,8 +5676,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1735551992}
-        m_TargetAssemblyTypeName: Dashboard, Assembly-CSharp
-        m_MethodName: VhMaxSpeedChanged
+        m_TargetAssemblyTypeName: Dashboard, AssemblyDefinition
+        m_MethodName: VhAverageSpeedChanged
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

@@ -8,10 +8,10 @@ public class SensorController : MonoBehaviour
 {
     [SerializeField] StatsCollector stats;
 
-    const float circleDetectionRadius = 12f;
+    const float circleDetectionRadius = 3.2f;
     const float circleSizeComparisonSafety = 0.9f; // reduce own size in comparisons as safety margin
-
-    static readonly int numTrackedCellsPerSensor = 6;
+    
+    static readonly int numTrackedCellsPerSensor = 4;
     public static readonly int numSensorValues = numTrackedCellsPerSensor * 3 * 2;     // numTracked * numValues (for both big & small)
                                                                                        // make sure numSensorValues % 4 == 0 so we can use float4 operations
     [BurstCompile]

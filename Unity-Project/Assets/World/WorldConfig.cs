@@ -22,14 +22,7 @@ public class WorldConfig : MonoBehaviour
         instance = this;
     }
 
-    public static float GaussMean;
-
-    [SerializeField] private float initialValues;
-    public float InitialValues
-    {
-        get { return initialValues; }
-        set { initialValues = value; }
-    }
+    public static float GaussStd;
 
     [SerializeField] private float cellSpawnSize;
     public float CellSpawnSize

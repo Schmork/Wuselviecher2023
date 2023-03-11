@@ -69,7 +69,7 @@ public class WorldController : MonoBehaviour
         var hero = Valhalla.GetRandomHero();
         if (Random.value < 1 - 1 / (20 + avgGen * avgGen) && hero != null)
         {
-            mc.Brain = new NeuralNetwork(hero, WorldConfig.GaussMean);
+            mc.Brain = new NeuralNetwork(hero, WorldConfig.GaussStd);
             if (mc.Brain.generation > Valhalla.OldestGen)
             {
                 Valhalla.OldestGen = mc.Brain.generation;

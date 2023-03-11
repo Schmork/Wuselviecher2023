@@ -44,17 +44,17 @@ public class Layer : ICloneable
     public static ActivationFunction RandomFunction()
     {
         var functions = Enum.GetValues(typeof(ActivationFunction)) as ActivationFunction[];
-        var randomIndex = 1 + Utility.Random.NextInt(functions.Length - 1); // skip "INPUT"
+        var randomIndex = Utility.Random.NextInt(functions.Length - 1);
         return functions[randomIndex];
     }
 
     static float4 RandomInitialValue()
     {
         return new float4(
-            Utility.Gauss(WorldConfig.Instance.InitialValues),
-            Utility.Gauss(WorldConfig.Instance.InitialValues),
-            Utility.Gauss(WorldConfig.Instance.InitialValues),
-            Utility.Gauss(WorldConfig.Instance.InitialValues)
+            Utility.Gauss(WorldConfig.GaussStd),
+            Utility.Gauss(WorldConfig.GaussStd),
+            Utility.Gauss(WorldConfig.GaussStd),
+            Utility.Gauss(WorldConfig.GaussStd)
             );
     }
 

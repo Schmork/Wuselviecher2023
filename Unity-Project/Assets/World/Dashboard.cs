@@ -111,7 +111,7 @@ public class Dashboard : MonoBehaviour
                 value /= 10;
             }
             else value -= 9;
-            WorldConfig.GaussMean = value;
+            WorldConfig.GaussStd = value;
             gaussValue.text = value.ToString("F4");
         });
 
