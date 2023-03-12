@@ -153,8 +153,9 @@ public class Dashboard : MonoBehaviour
         decaySlider.value = PlayerPrefs.GetFloat("Scores Decay");
         fenceSlider.value = PlayerPrefs.GetFloat("Sim Fence");
         gaussSlider.value = PlayerPrefs.GetFloat("Sim Gauss");
-        areaSliderRect.SetValue(PlayerPrefs.GetFloat("Sim SpawnX"), RectangleSlider.Axis.Horizontal);
-        areaSliderRect.SetValue(PlayerPrefs.GetFloat("Sim SpawnY"), RectangleSlider.Axis.Vertical);
+        var width = PlayerPrefs.GetFloat("Sim SpawnX");
+        var height = PlayerPrefs.GetFloat("Sim SpawnY");
+        areaSliderRect.SetValue(width, height);
         areaSlider.value = PlayerPrefs.GetFloat("Sim SpawnZ");
 
         vhDistanceTravelled.value = PlayerPrefs.GetFloat("Hero Chance " + Valhalla.Metric.DistanceTravelled.ToString());
@@ -165,7 +166,6 @@ public class Dashboard : MonoBehaviour
         vhTimeSurvived.value = PlayerPrefs.GetFloat("Hero Chance " + Valhalla.Metric.TimeSurvived.ToString());
         vhStraightMass.value = PlayerPrefs.GetFloat("Hero Chance " + Valhalla.Metric.StraightMass.ToString());
         peaceSlider.value = PlayerPrefs.GetFloat("Hero Chance " + Valhalla.Metric.PeaceTime.ToString());
-        areaSlider.value = PlayerPrefs.GetFloat("Hero Chance " + Valhalla.Metric.PeaceTime.ToString());
     }
 
     void UpdateAreaText()

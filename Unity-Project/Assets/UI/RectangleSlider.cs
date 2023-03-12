@@ -55,10 +55,10 @@ public class RectangleSlider : MonoBehaviour, IPointerDownHandler, IDragHandler
     void AdjustValueArea()
     {
         var value = GetValue();
-        OnValueChanged?.Invoke(value);
         var rect = value * SliderArea.rect.size;
         ValueArea.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, rect.x);
         ValueArea.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, rect.y);
+        OnValueChanged?.Invoke(value);
     }
 
     public Vector2 GetValue()
@@ -67,17 +67,13 @@ public class RectangleSlider : MonoBehaviour, IPointerDownHandler, IDragHandler
         return pos / SliderArea.rect.size;
     }
 
-    // ToDo: Implement
-    public void SetValue(float value, Axis axis)
+    public void SetValue(float width, float height)
     {
-        switch(axis)
-        {
-            case Axis.Horizontal:
-                break;
-
-            case Axis.Vertical:
-                break;
-        }
+        var knobPos = Knob.localPosition;
+        knobPos.x = SliderArea.rect.width * (width - 0.5f);
+        knobPos.y = SliderArea.rect.height * (height - 0.5f);
+        Knob.localPosition = knobPos;
+        AdjustValueArea();
     }
 
     public enum Axis { Horizontal, Vertical };

@@ -12231,10 +12231,10 @@ MonoBehaviour:
   m_FillRect: {fileID: 1964824308}
   m_HandleRect: {fileID: 23295470}
   m_Direction: 0
-  m_MinValue: 0.5
-  m_MaxValue: 4
+  m_MinValue: 0.01
+  m_MaxValue: 2
   m_WholeNumbers: 0
-  m_Value: 2
+  m_Value: 1
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []

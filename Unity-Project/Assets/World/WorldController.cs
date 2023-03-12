@@ -42,14 +42,13 @@ public class WorldController : MonoBehaviour
 
         var existingCells = FindObjectsOfType<SizeController>();
         var cellsOutsideRadius = existingCells
-            .Where(c => c.transform.position.magnitude > (c.Size + 1) * CellSpawnRadius * WorldConfig.FenceRadius);
+            .Where(c => c.transform.position.magnitude > (c.Size + 1) * WorldConfig.SpawnRect.z * WorldConfig.FenceRadius);
         foreach (var c in cellsOutsideRadius)
             c.gameObject.SetActive(false);
 
         Dashboard.UpdateCellCount(existingCells.Length);
         Dashboard.UpdateCellMass((int)existingCells.Sum(c => c.Size));
 
-        //var pos = transform.position + (Vector3)Random.insideUnitCircle * CellSpawnRadius;
         var off = Utility.Random.NextFloat2((Vector2)WorldConfig.SpawnRect);
         var pos = transform.position + WorldConfig.SpawnRect.z * 
             (Vector3)(new Vector2(off.x, off.y) - (Vector2)WorldConfig.SpawnRect / 2);
