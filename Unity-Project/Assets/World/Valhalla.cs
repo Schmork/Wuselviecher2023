@@ -90,6 +90,16 @@ public class Valhalla : MonoBehaviour
         }
     }
 
+    void OnApplicationQuit()
+    {
+        for (int i = 0; i < scores.Count; i++)
+        {
+            var metric = (Metric)i;
+            PlayerPrefs.SetString(VSCOR + metric.ToString(),
+                scores[metric].ToString(CultureInfo.InvariantCulture));
+        }
+    }
+
     public void Wipe()
     {
         var cells = FindObjectsOfType<SizeController>();
