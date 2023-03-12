@@ -23,6 +23,8 @@ public class WorldConfig : MonoBehaviour
     }
 
     public static float GaussStd;
+    public static float FenceRadius;
+    public static Vector3 SpawnRect;
 
     [SerializeField] private float cellSpawnSize;
     public float CellSpawnSize
@@ -37,13 +39,5 @@ public class WorldConfig : MonoBehaviour
     {
         get { return deathBelowSize; }
         set { deathBelowSize = value; }
-    }
-
-    [SerializeField] private float fenceRadius;
-
-    public float FenceRadius
-    {
-        get { return fenceRadius; }
-        set { fenceRadius = value; }
     }
 }

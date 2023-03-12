@@ -29,8 +29,10 @@ public class SizeController : MonoBehaviour
 
     void Update()
     {
-        Size -= Time.deltaTime / 100f * Mathf.Pow(Size + 1, 0.95f);
-        Size -= Time.deltaTime / 500f * Mathf.Abs(rb.angularVelocity) / (1 + rb.velocity.magnitude);
-        Size -= Time.deltaTime / 30f / (1 + rb.velocity.magnitude);
+        var sizeTime  = Mathf.Pow(Size + 1, 1.1f) * Time.deltaTime;
+        var slow = (1 + rb.velocity.magnitude);
+        Size -= sizeTime / 1000f;
+        Size -= sizeTime / 1500f / slow * Mathf.Abs(rb.angularVelocity);
+        Size -= sizeTime / 500f / slow;
     }
 }

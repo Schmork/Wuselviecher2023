@@ -39,12 +39,20 @@ public class WorldController : MonoBehaviour
     void Spawn()
     {
         if (40 / Time.deltaTime < 1) return;
+
         var existingCells = FindObjectsOfType<SizeController>();
+        var cellsOutsideRadius = existingCells
+            .Where(c => c.transform.position.magnitude > (c.Size + 1) * CellSpawnRadius * WorldConfig.FenceRadius);
+        foreach (var c in cellsOutsideRadius)
+            c.gameObject.SetActive(false);
+
         Dashboard.UpdateCellCount(existingCells.Length);
         Dashboard.UpdateCellMass((int)existingCells.Sum(c => c.Size));
 
-        var which = Random.Range(-1, 2) * transform.right * CellSpawnRadius * 2.3f;
-        var pos = which + transform.position + (Vector3)Random.insideUnitCircle * CellSpawnRadius;
+        //var pos = transform.position + (Vector3)Random.insideUnitCircle * CellSpawnRadius;
+        var off = Utility.Random.NextFloat2((Vector2)WorldConfig.SpawnRect);
+        var pos = transform.position + WorldConfig.SpawnRect.z * 
+            (Vector3)(new Vector2(off.x, off.y) - (Vector2)WorldConfig.SpawnRect / 2);
 
         SizeController other;
         for (int i = 0; i < existingCells.Length; i++)
@@ -70,7 +78,7 @@ public class WorldController : MonoBehaviour
 
         if (hero == null || Random.value < 1 / (20 + avgGen * avgGen))
             mc.Brain = NeuralNetwork.NewRandom();
-        else 
+        else
         {
             mc.Brain = hero.Mutate(WorldConfig.GaussStd);
             if (mc.Brain.generation > Valhalla.OldestGen)

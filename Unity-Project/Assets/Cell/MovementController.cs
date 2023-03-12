@@ -28,7 +28,6 @@ public class MovementController : MonoBehaviour
     [BurstCompile]
     void Update()
     {
-        if (transform.position.magnitude > WorldConfig.Instance.FenceRadius * math.sqrt(10 + sc.Size)) gameObject.SetActive(false);
         stats.AddToScore(Valhalla.Metric.AverageSpeed, rb.velocity.magnitude * Time.deltaTime / 100f);
         stats.AddToScore(Valhalla.Metric.DistanceTravelled, rb.velocity.magnitude / sc.Size * Time.deltaTime);
 
