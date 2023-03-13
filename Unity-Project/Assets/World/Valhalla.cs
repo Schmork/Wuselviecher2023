@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using UnityEngine;
 
@@ -36,14 +35,9 @@ public class Valhalla : MonoBehaviour
     public delegate void OnHighscoreChangedHandler(Metric metric, float newScore);
     public static event OnHighscoreChangedHandler OnHighscoreChanged;
 
-    static string dataPath;
-
     void OnEnable()
     {
         InitDictionaries();
-        dataPath = Application.persistentDataPath + "/Heroes/";
-        if (!Directory.Exists(dataPath))
-            Directory.CreateDirectory(dataPath);
         LoadHeroesFromFiles();
     }
 
@@ -67,13 +61,10 @@ public class Valhalla : MonoBehaviour
     {
         foreach (Metric metric in System.Enum.GetValues(typeof(Metric)))
         {
-            string filePath = dataPath + VHERO + metric.ToString() + ".json";
-            if (!File.Exists(filePath)) continue;
-            string dataJson = File.ReadAllText(filePath);
-            var data = JsonUtility.FromJson<HeroData>(dataJson);
+            var data = FileHandler.LoadHeroFromFile(metric);
             if (data == null) continue;
-            scores[metric] = data.Score;
-            heroes[metric] = data.Networks;
+            scores[metric] = data.Value.Score;
+            heroes[metric] = data.Value.Networks;
         }
     }
 
@@ -100,9 +91,7 @@ public class Valhalla : MonoBehaviour
         {
             foreach (Metric metric in System.Enum.GetValues(typeof(Metric)))
             {
-                HeroData data = new HeroData { Score = scores[metric], Networks = heroes[metric] };
-                string dataJson = JsonUtility.ToJson(data);
-                File.WriteAllText(dataPath + VHERO + metric.ToString() + ".json", dataJson);
+                FileHandler.SaveHeroToFile(metric, scores[metric], heroes[metric]);
             }
             yield return new WaitForSecondsRealtime(WorldConfig.Instance.AutoSaveMinutes * 60);
         }
@@ -123,12 +112,9 @@ public class Valhalla : MonoBehaviour
 
     void OnApplicationQuit()
     {
-        for (int i = 0; i < scores.Count; i++)
+        foreach (Metric metric in System.Enum.GetValues(typeof(Metric)))
         {
-            var metric = (Metric)i;
-            HeroData data = new HeroData { Score = scores[metric], Networks = heroes[metric] };
-            string dataJson = JsonUtility.ToJson(data);
-            File.WriteAllText(dataPath + VHERO + metric.ToString() + ".json", dataJson);
+            FileHandler.SaveHeroToFile(metric, scores[metric], heroes[metric]);
         }
     }
 
@@ -146,9 +132,7 @@ public class Valhalla : MonoBehaviour
         foreach (Metric metric in System.Enum.GetValues(typeof(Metric)))
         {
             OnHighscoreChanged?.Invoke(metric, 0);
-            HeroData data = new HeroData { Score = scores[metric], Networks = null };
-            string dataJson = JsonUtility.ToJson(data);
-            File.WriteAllText(dataPath + VHERO + metric.ToString() + ".json", dataJson);
+            FileHandler.SaveHeroToFile(metric, 0, null);
         }
     }
 
