@@ -51,7 +51,10 @@ public class Layer : ICloneable
     {
         float4[] output = new float4[Biases.Length];
         for (int i = 0; i < Biases.Length; i++)
+        {
             output[i] = Biases[i] + input[i];
+            Memory[i] = output[i];
+        }
         return output;
     }
 

@@ -12,6 +12,7 @@ public class WorldController : MonoBehaviour
 
     static double avgGen;
     public static int CellCount;
+    public static GameObject BiggestCell;
 
     private void Awake()
     {
@@ -47,11 +48,14 @@ public class WorldController : MonoBehaviour
         foreach (var c in cellsOutsideRadius)
             c.gameObject.SetActive(false);
 
+        var biggest = existingCells.OrderByDescending(cell => cell.Size).FirstOrDefault();
+        if (biggest != null) BiggestCell = biggest.gameObject;
+
         Dashboard.UpdateCellCount(existingCells.Length);
         Dashboard.UpdateCellMass((int)existingCells.Sum(c => c.Size));
 
         var off = Utility.Random.NextFloat2((Vector2)WorldConfig.SpawnRect);
-        var pos = transform.position + WorldConfig.SpawnRect.z * 
+        var pos = transform.position + WorldConfig.SpawnRect.z *
             (Vector3)(new Vector2(off.x, off.y) - (Vector2)WorldConfig.SpawnRect / 2);
 
         SizeController other;
@@ -85,15 +89,13 @@ public class WorldController : MonoBehaviour
         }
         else
         {
-            for (int i = 0; i < 4; i++)
-            {
-                mc.Brains[i] = hero[i].Mutate(WorldConfig.GaussStd);
+            var i = Utility.Random.NextInt(4);
+            mc.Brains[i] = hero[i].Mutate(WorldConfig.GaussStd);
 
-                if (mc.Brains[i].generation > Valhalla.OldestGen)
-                {
-                    Valhalla.OldestGen = mc.Brains[i].generation;
-                    Dashboard.UpdateCellMaxGen(Valhalla.OldestGen);
-                }
+            if (mc.Brains[i].generation > Valhalla.OldestGen)
+            {
+                Valhalla.OldestGen = mc.Brains[i].generation;
+                Dashboard.UpdateCellMaxGen(Valhalla.OldestGen);
             }
         }
         cell.SetActive(true);

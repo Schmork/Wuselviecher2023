@@ -34,17 +34,16 @@ public class NeuralNetwork : ICloneable
     {
         var nn = new NeuralNetwork
         {
+            generation = 0,
+            Memory = new int2[numInputs - SensorController.numSensorValues - 4],
             Layers = new List<Layer>() { new Layer(numInputs, 0, ActivationFunction.Identity) }
         };
         nn.AddLayer(16);
         nn.AddLayer(12);
         nn.AddLayer(8);
 
-        nn.Memory = new int2[numInputs - SensorController.numSensorValues - 4];
-        for (int i = 0; i < nn.Memory.Length; i++)
-            RandomMemory(nn, i);
+        for (int i = 0; i < nn.Memory.Length; i++) nn.RandomMemory(i);
 
-        nn.generation = 0;
         return nn;
     }
 
@@ -53,21 +52,18 @@ public class NeuralNetwork : ICloneable
         Layers.Add(new Layer(numNeurons, Layers[^1].Biases.Length, function));
     }
 
-    static void RandomMemory(NeuralNetwork nn, int i)
+    void RandomMemory(int i)
     {
-        var l = Utility.Random.NextInt(nn.Layers.Count);
+        var l = Utility.Random.NextInt(Layers.Count);
         int n;
-        do n = Utility.Random.NextInt(nn.Layers[l].Biases.Length);
-        while (l == 0 && n >= nn.Memory.Length);      // don't wire memory to itself
-        nn.Memory[i] = new int2(l, n);
+        do n = Utility.Random.NextInt(Layers[l].Biases.Length);
+        while (l == 0 && n >= Memory.Length);      // don't wire memory to itself
+        Memory[i] = new int2(l, n);
     }
 
     [BurstCompile]
     public NeuralNetwork Mutate(float mutation = 0.01f)
     {
-        var clone = (NeuralNetwork)Clone();
-        clone.generation++;
-
         var totalWeight = mutations.Values.Sum();
         var random = Utility.Random.NextFloat(totalWeight);
         var mutationType = MutationType.WEIGHT;
@@ -82,23 +78,24 @@ public class NeuralNetwork : ICloneable
             }
         }
 
-        (int layer, int item) = GetRandomElementIndex(clone.Layers, mutationType);
+        (int layer, int item) = GetRandomElementIndex(Layers, mutationType);
         switch (mutationType)
         {
             case MutationType.BIAS:
-                clone.Layers[layer].Biases[item] += Utility.Gauss(mutation);
+                Layers[layer].Biases[item] += Utility.Gauss(mutation);
                 break;
             case MutationType.WEIGHT:
-                clone.Layers[layer].Weights[item] += Utility.Gauss(mutation);
+                Layers[layer].Weights[item] += Utility.Gauss(mutation);
                 break;
             case MutationType.MEMORY:
-                RandomMemory(clone, Utility.Random.NextInt(clone.Memory.Length));
+                RandomMemory(Utility.Random.NextInt(Memory.Length));
                 break;
             case MutationType.FUNCTION:
-                clone.Layers[layer].Functions[item] = Layer.RandomFunction();
+                Layers[layer].Functions[item] = Layer.RandomFunction();
                 break;
         }
-        return clone;
+
+        return this;
     }
 
     static (int layer, int item) GetRandomElementIndex(List<Layer> layers, MutationType which)
