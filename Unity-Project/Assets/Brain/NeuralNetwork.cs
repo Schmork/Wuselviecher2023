@@ -94,6 +94,7 @@ public class NeuralNetwork : ICloneable
                 Layers[layer].Functions[item] = Layer.RandomFunction();
                 break;
         }
+        generation++;
     }
 
     static (int layer, int item) GetRandomElementIndex(List<Layer> layers, MutationType which)

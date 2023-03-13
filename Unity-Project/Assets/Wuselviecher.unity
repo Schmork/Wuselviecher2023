@@ -3423,9 +3423,9 @@ GameObject:
   - component: {fileID: 413936422}
   - component: {fileID: 413936425}
   - component: {fileID: 413936424}
-  - component: {fileID: 413936427}
   - component: {fileID: 413936426}
   - component: {fileID: 413936428}
+  - component: {fileID: 413936427}
   m_Layer: 0
   m_Name: World
   m_TagString: Untagged
@@ -3493,6 +3493,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 221fc59c52f4e0d41966df1ef98ec50b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  distanceTravelled: {fileID: 393262281}
+  massEaten: {fileID: 907404666}
+  timeSurvived: {fileID: 379275592}
+  speedEaten: {fileID: 1151011101}
+  averageSpeed: {fileID: 986459564}
+  massPerAction: {fileID: 415385307}
+  straightMass: {fileID: 851280491}
+  peaceTime: {fileID: 145899247}
 --- !u!114 &413936427
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10486,13 +10494,6 @@ MonoBehaviour:
   areaValue: {fileID: 1104834726}
   areaSliderRect: {fileID: 144107030}
   areaSlider: {fileID: 1961020760}
-  vhDistanceTravelled: {fileID: 393262281}
-  vhMassEaten: {fileID: 907404666}
-  vhTimeSurvived: {fileID: 379275592}
-  vhSpeedEaten: {fileID: 1151011101}
-  vhAverageSpeed: {fileID: 986459564}
-  vhMassPerAction: {fileID: 415385307}
-  vhStraightMass: {fileID: 851280491}
   toggleSpeed: {fileID: 1919754835}
 --- !u!1 &1764419398
 GameObject:
