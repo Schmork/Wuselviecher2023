@@ -11,6 +11,7 @@ public class WorldController : MonoBehaviour
     [SerializeField] GameObject CellPrefab;
 
     static double avgGen;
+    public static int CellCount;
 
     private void Awake()
     {
@@ -38,7 +39,7 @@ public class WorldController : MonoBehaviour
 
     void Spawn()
     {
-        if (40 / Time.deltaTime < 1) return;
+        if (WorldConfig.FPS < 45) return;
 
         var existingCells = FindObjectsOfType<SizeController>();
         var cellsOutsideRadius = existingCells
@@ -100,6 +101,7 @@ public class WorldController : MonoBehaviour
         var mcs = FindObjectsOfType<MovementController>();
         if (mcs.Length > 0)
         {
+            CellCount = mcs.Length;
             avgGen = mcs.SelectMany(mc => mc.Brains).Average(brain => brain.generation);
             Dashboard.UpdateCellAvgGen(avgGen);
         }

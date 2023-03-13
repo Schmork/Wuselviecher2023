@@ -81,7 +81,13 @@ public class Valhalla : MonoBehaviour
     {
         if (score < scores[metric]) return;
 
-        heroes[metric] = networks;
+        var clones = new NeuralNetwork[networks.Length];
+        for (int i = 0; i < clones.Length; i++)
+        {
+            clones[i] = networks[i].Clone() as NeuralNetwork;
+        }
+
+        heroes[metric] = clones;
         scores[metric] = score;
 
         OnHighscoreChanged?.Invoke(metric, score);

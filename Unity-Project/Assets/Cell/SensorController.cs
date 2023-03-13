@@ -11,7 +11,7 @@ public class SensorController : MonoBehaviour
     const float circleDetectionRadius = 3.2f;
     const float circleSizeComparisonSafety = 0.9f; // reduce own size in comparisons as safety margin
     
-    static readonly int numTrackedCellsPerSensor = 4;
+    static readonly int numTrackedCellsPerSensor = 2;
     public static readonly int numSensorValues = numTrackedCellsPerSensor * 3 * 2;     // numTracked * numValues (for both big & small)
                                                                                        // make sure numSensorValues % 4 == 0 so we can use float4 operations
     [BurstCompile]
@@ -57,6 +57,7 @@ public class SensorController : MonoBehaviour
             if (hit.gameObject == gameObject) continue;
 
             var hitScale = hit.transform.localScale.x;
+            var sqDist = math.distancesq(myPos, V3_to_float2(hit.transform.position));
 
             // find smaller
             if (hitScale < myScale * circleSizeComparisonSafety)
@@ -64,19 +65,18 @@ public class SensorController : MonoBehaviour
                 while (smallerQueue.ContainsKey(hitScale)) hitScale += 0.001f;
                 if (smallerQueue.Count < numTrackedCellsPerSensor)
                 {
-                    smallerQueue.Add(hitScale, new Trans(hit.transform, hit.attachedRigidbody.velocity));
+                    smallerQueue.Add(sqDist / hitScale, new Trans(hit.transform, hit.attachedRigidbody.velocity));
                 }
-                else if (hitScale > smallerQueue.Values[0].localScale)
+                else if (sqDist / hitScale < smallerQueue.Keys[0])
                 {
                     smallerQueue.RemoveAt(0);
-                    smallerQueue.Add(hitScale, new Trans(hit.transform, hit.attachedRigidbody.velocity));
+                    smallerQueue.Add(sqDist / hitScale, new Trans(hit.transform, hit.attachedRigidbody.velocity));
                 }
             }
 
             // find bigger
             else
             {
-                var sqDist = math.distancesq(myPos, V3_to_float2(hit.transform.position));
                 while (biggerQueue.ContainsKey(sqDist)) sqDist += 0.001f;
                 if (biggerQueue.Count < numTrackedCellsPerSensor)
                 {

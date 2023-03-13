@@ -174,14 +174,6 @@ public class Dashboard : MonoBehaviour
         areaValue.text = area.x.ToString("F0") + ", " + area.y.ToString("F0");
     }
 
-    void Update()
-    {
-        if (!toggleSpeed.isOn) return;
-        var fps = 1f / Time.unscaledDeltaTime;
-        if (fps > 70) speedSlider.value++;
-        if (fps < 35 && speedSlider.value > 20) speedSlider.value--;
-    }
-
     void HighscoreChangedHandler(Valhalla.Metric metric, float score)
     {
         TMP_Text component = metric switch

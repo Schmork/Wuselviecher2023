@@ -11,7 +11,7 @@ public class NeuralNetwork : ICloneable
     public List<Layer> Layers;
     public int generation;
 
-    public static readonly int numInputs = 48;  // 4 self, + sensors + memory
+    public static readonly int numInputs = 20;  // 4 self, + sensors + memory
     public int2[] Memory;                       // x = layer, y = neuron index
 
     enum MutationType
@@ -36,7 +36,7 @@ public class NeuralNetwork : ICloneable
         {
             Layers = new List<Layer>() { new Layer(numInputs, 0, ActivationFunction.Identity) }
         };
-        nn.AddLayer(32);
+        nn.AddLayer(16);
         nn.AddLayer(12);
         nn.AddLayer(8);
 

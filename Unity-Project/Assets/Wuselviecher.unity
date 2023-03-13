@@ -3459,7 +3459,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbd494a7344cdb04cb9d34cbf850e1a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CellSpawnTimes: {x: 0.1, y: 0.25}
+  CellSpawnTimes: {x: 0.2, y: 0.25}
   CellSpawnRadius: 40
   CellPrefab: {fileID: 4899608772384843270, guid: 1e92a15f946344b47b31278ad92ac86a, type: 3}
 --- !u!114 &413936425
@@ -3474,6 +3474,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f36677ad606ed841b84b61befaf773a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  speedSlider: {fileID: 441781311}
+  toggleSpeed: {fileID: 1919754835}
+  targetCellCount: 120
   cellSpawnSize: 5
   deathBelowSize: 0.2
   autoSaveMinutes: 1
