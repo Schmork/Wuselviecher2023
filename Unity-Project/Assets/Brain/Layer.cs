@@ -11,9 +11,9 @@ public class Layer : ICloneable
     public float4[] Weights;
     public float4[] Memory;
 
-    public Layer(int neuronCount, int inputLength, ActivationFunction? function = null)
+    public Layer(int neuronCount, int inputLength, bool isInputLayer = false)
     {
-        Functions = new ActivationFunction[neuronCount];
+        Functions = new ActivationFunction[isInputLayer ? 0 : neuronCount];
         Biases = new float4[neuronCount / 4];
         Memory = new float4[neuronCount / 4];
         Weights = new float4[neuronCount * inputLength / 4];
@@ -22,8 +22,7 @@ public class Layer : ICloneable
         for (i = 0; i < Biases.Length; i++)
         {
             Biases[i] = RandomInitialValue();
-            for (int j = 0; j < 4; j++)
-                Functions[i + j] = function == null ? RandomFunction() : (ActivationFunction)function;
+            if (!isInputLayer) Functions[i] = RandomFunction();
         }
         for (i = 0; i < Weights.Length; i++)
             Weights[i] = RandomInitialValue();

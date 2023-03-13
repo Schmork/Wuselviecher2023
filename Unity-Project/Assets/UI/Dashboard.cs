@@ -1,6 +1,6 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using UnityEngine.EventSystems;
 
 public class Dashboard : MonoBehaviour
@@ -80,7 +80,7 @@ public class Dashboard : MonoBehaviour
                 str = "F1";
             }
             else value -= 9;
-            if (value > 15) 
+            if (value > 15)
                 value = (int)Mathf.Pow(value, 1.2f) - 10;
 
             Time.timeScale = value;
@@ -120,7 +120,7 @@ public class Dashboard : MonoBehaviour
 
         peaceSlider.onValueChanged.AddListener((value) =>
         {
-            Valhalla.metricChanceForRandomHero[(int)Valhalla.Metric.PeaceTime] = value;
+            Valhalla.Heroes[Valhalla.Metric.PeaceTime].ChanceToBePicked = value;
             PlayerPrefs.SetFloat("Hero Chance " + Valhalla.Metric.PeaceTime.ToString(), value);
         });
 
@@ -193,42 +193,43 @@ public class Dashboard : MonoBehaviour
 
     public void VhDistanceTravelledChanged(float value)
     {
-        Valhalla.metricChanceForRandomHero[(int)Valhalla.Metric.DistanceTravelled] = value;
+        Valhalla.Heroes[Valhalla.Metric.DistanceTravelled].ChanceToBePicked = value;
         PlayerPrefs.SetFloat("Hero Chance " + Valhalla.Metric.DistanceTravelled.ToString(), value);
     }
 
     public void VhMassEatenChanged(float value)
     {
-        Valhalla.metricChanceForRandomHero[(int)Valhalla.Metric.MassEaten] = value;
+        Valhalla.Heroes[Valhalla.Metric.MassEaten].ChanceToBePicked = value;
         PlayerPrefs.SetFloat("Hero Chance " + Valhalla.Metric.MassEaten.ToString(), value);
     }
 
     public void VhTimeSurvivedChanged(float value)
     {
-        Valhalla.metricChanceForRandomHero[(int)Valhalla.Metric.TimeSurvived] = value;
+        Valhalla.Heroes[Valhalla.Metric.TimeSurvived].ChanceToBePicked = value;
         PlayerPrefs.SetFloat("Hero Chance " + Valhalla.Metric.TimeSurvived.ToString(), value);
     }
 
     public void VhSpeedEatenChanged(float value)
     {
-        Valhalla.metricChanceForRandomHero[(int)Valhalla.Metric.MassEatenAtSpeed] = value;
+        Valhalla.Heroes[Valhalla.Metric.MassEatenAtSpeed].ChanceToBePicked = value;
         PlayerPrefs.SetFloat("Hero Chance " + Valhalla.Metric.MassEatenAtSpeed.ToString(), value);
     }
 
     public void VhAverageSpeedChanged(float value)
     {
-        Valhalla.metricChanceForRandomHero[(int)Valhalla.Metric.AverageSpeed] = value;
+        Valhalla.Heroes[Valhalla.Metric.AverageSpeed].ChanceToBePicked = value;
         PlayerPrefs.SetFloat("Hero Chance " + Valhalla.Metric.AverageSpeed.ToString(), value);
     }
 
     public void VhMassPerActionChanged(float value)
     {
-        Valhalla.metricChanceForRandomHero[(int)Valhalla.Metric.MassPerAction] = value;
+        Valhalla.Heroes[Valhalla.Metric.MassPerAction].ChanceToBePicked = value;
         PlayerPrefs.SetFloat("Hero Chance " + Valhalla.Metric.MassPerAction.ToString(), value);
     }
+
     public void VhStraightMassChanged(float value)
     {
-        Valhalla.metricChanceForRandomHero[(int)Valhalla.Metric.StraightMass] = value;
+        Valhalla.Heroes[Valhalla.Metric.StraightMass].ChanceToBePicked = value;
         PlayerPrefs.SetFloat("Hero Chance " + Valhalla.Metric.StraightMass.ToString(), value);
     }
 

@@ -108,7 +108,7 @@ public class SensorController : MonoBehaviour
             {
                 var bigger = ParseCell(trans);
                 results[i + j + numSensorValues / 2] = bigger[j];
-                if (biggerQueue.Count == 0 && gameObject != WorldController.BiggestCell)
+                if (biggerQueue.Count == 0 && myScale < WorldController.BiggestCell)
                     stats.AddToScore(
                         Valhalla.Metric.PeaceTime,
                         myScale / 100f * Time.deltaTime

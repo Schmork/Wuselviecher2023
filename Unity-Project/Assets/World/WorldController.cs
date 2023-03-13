@@ -12,7 +12,7 @@ public class WorldController : MonoBehaviour
 
     static double avgGen;
     public static int CellCount;
-    public static GameObject BiggestCell;
+    public static float BiggestCell;
 
     private void Awake()
     {
@@ -49,7 +49,7 @@ public class WorldController : MonoBehaviour
             c.gameObject.SetActive(false);
 
         var biggest = existingCells.OrderByDescending(cell => cell.Size).FirstOrDefault();
-        if (biggest != null) BiggestCell = biggest.gameObject;
+        if (biggest != null) BiggestCell = biggest.transform.localScale.x;
 
         Dashboard.UpdateCellCount(existingCells.Length);
         Dashboard.UpdateCellMass((int)existingCells.Sum(c => c.Size));
@@ -78,23 +78,23 @@ public class WorldController : MonoBehaviour
         cell.GetComponent<SizeController>().Size = WorldConfig.Instance.CellSpawnSize;
 
         var mc = cell.GetComponent<MovementController>();
-        var hero = Valhalla.GetRandomHero();
+        mc.Brains = Valhalla.GetRandomHero();
 
-        if (hero[0] == null || Random.value < 1 / (20 + avgGen * avgGen))
+        if (mc.Brains[0] == null || Random.value < 1 / (20 + avgGen * avgGen))
         {
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < mc.Brains.Length; i++)
             {
                 mc.Brains[i] = NeuralNetwork.NewRandom();
             }
         }
         else
         {
-            var i = Utility.Random.NextInt(4);
-            mc.Brains[i] = hero[i].Mutate(WorldConfig.GaussStd);
+            var mutateMe = Utility.Random.NextInt(4);
+            mc.Brains[mutateMe].Mutate(WorldConfig.GaussStd);
 
-            if (mc.Brains[i].generation > Valhalla.OldestGen)
+            if (mc.Brains[mutateMe].generation > Valhalla.OldestGen)
             {
-                Valhalla.OldestGen = mc.Brains[i].generation;
+                Valhalla.OldestGen = mc.Brains[mutateMe].generation;
                 Dashboard.UpdateCellMaxGen(Valhalla.OldestGen);
             }
         }

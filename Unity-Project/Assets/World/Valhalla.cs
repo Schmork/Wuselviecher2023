@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 [System.Serializable]
@@ -7,6 +6,7 @@ public class HeroData
 {
     public float Score;
     public NeuralNetwork[] Networks;
+    public float ChanceToBePicked;
 }
 
 public class Valhalla : MonoBehaviour
@@ -27,10 +27,8 @@ public class Valhalla : MonoBehaviour
         PeaceTime
     }
 
-    static Dictionary<Metric, NeuralNetwork[]> heroes;
-    static Dictionary<Metric, float> scores;
+    public static Dictionary<Metric, HeroData> Heroes;
     public static int OldestGen = 0;
-    public static float[] metricChanceForRandomHero = new float[System.Enum.GetValues(typeof(Metric)).Length];
 
     public delegate void OnHighscoreChangedHandler(Metric metric, float newScore);
     public static event OnHighscoreChangedHandler OnHighscoreChanged;
@@ -43,17 +41,10 @@ public class Valhalla : MonoBehaviour
 
     void InitDictionaries()
     {
-        for (int i = 0; i < metricChanceForRandomHero.Length; i++)
-        {
-            metricChanceForRandomHero[i] = 1;
-        }
-
-        heroes = new Dictionary<Metric, NeuralNetwork[]>();
-        scores = new Dictionary<Metric, float>();
+        Heroes = new Dictionary<Metric, HeroData>();
         foreach (Metric metric in System.Enum.GetValues(typeof(Metric)))
         {
-            heroes[metric] = new NeuralNetwork[4];
-            scores[metric] = 0;
+            Heroes.Add(metric, new HeroData() { Networks = new NeuralNetwork[4] });
         }
     }
 
@@ -63,23 +54,24 @@ public class Valhalla : MonoBehaviour
         {
             var data = FileHandler.LoadHeroFromFile(metric);
             if (data == null) continue;
-            scores[metric] = data.Value.Score;
-            heroes[metric] = data.Value.Networks;
+            Heroes[metric].Networks = data.Value.Networks;
+            Heroes[metric].Score = data.Value.Score;
         }
     }
 
     public static void AddHero(NeuralNetwork[] networks, Metric metric, float score)
     {
-        if (score < scores[metric]) return;
+        if (score < Heroes[metric].Score) return;
 
         var clones = new NeuralNetwork[networks.Length];
         for (int i = 0; i < clones.Length; i++)
         {
             clones[i] = networks[i].Clone() as NeuralNetwork;
+            clones[i].generation++;
         }
 
-        heroes[metric] = clones;
-        scores[metric] = score;
+        Heroes[metric].Networks = clones;
+        Heroes[metric].Score = score;
 
         OnHighscoreChanged?.Invoke(metric, score);
     }
@@ -91,7 +83,7 @@ public class Valhalla : MonoBehaviour
         {
             foreach (Metric metric in System.Enum.GetValues(typeof(Metric)))
             {
-                FileHandler.SaveHeroToFile(metric, scores[metric], heroes[metric]);
+                FileHandler.SaveHeroToFile(metric, Heroes[metric].Score, Heroes[metric].Networks);
             }
             yield return new WaitForSecondsRealtime(WorldConfig.Instance.AutoSaveMinutes * 60);
         }
@@ -103,10 +95,10 @@ public class Valhalla : MonoBehaviour
         if (Time.time - lastDecay < 1) return;
         lastDecay = Time.time;
 
-        for (int i = 0; i < scores.Count; i++)
+        foreach (Metric metric in System.Enum.GetValues(typeof(Metric)))
         {
-            scores[(Metric)i] *= (1 - Dashboard.Decay);
-            OnHighscoreChanged?.Invoke(scores.ElementAt(i).Key, scores[(Metric)i]);
+            Heroes[metric].Score *= (1 - Dashboard.Decay);
+            OnHighscoreChanged?.Invoke(metric, Heroes[metric].Score);
         }
     }
 
@@ -114,7 +106,7 @@ public class Valhalla : MonoBehaviour
     {
         foreach (Metric metric in System.Enum.GetValues(typeof(Metric)))
         {
-            FileHandler.SaveHeroToFile(metric, scores[metric], heroes[metric]);
+            FileHandler.SaveHeroToFile(metric, Heroes[metric].Score, Heroes[metric].Networks);
         }
     }
 
@@ -138,19 +130,18 @@ public class Valhalla : MonoBehaviour
 
     public static NeuralNetwork[] GetRandomHero()
     {
-        int i;
         var sum = 0f;
-        for (i = 0; i < metricChanceForRandomHero.Length; i++)
+        foreach (Metric metric in System.Enum.GetValues(typeof(Metric)))
         {
-            sum += metricChanceForRandomHero[i];
+            sum += Heroes[metric].ChanceToBePicked;
         }
         var rand = Utility.Random.NextDouble() * sum;
 
         sum = 0;
-        for (i = 0; i < metricChanceForRandomHero.Length; i++)
+        foreach (Metric metric in System.Enum.GetValues(typeof(Metric)))
         {
-            sum += metricChanceForRandomHero[i];
-            if (rand < sum) return heroes[(Metric)i];
+            sum += Heroes[metric].ChanceToBePicked;
+            if (rand < sum) return Heroes[metric].Networks;
         }
 
         return new NeuralNetwork[]

@@ -36,7 +36,7 @@ public class NeuralNetwork : ICloneable
         {
             generation = 0,
             Memory = new int2[numInputs - SensorController.numSensorValues - 4],
-            Layers = new List<Layer>() { new Layer(numInputs, 0, ActivationFunction.Identity) }
+            Layers = new List<Layer>() { new Layer(numInputs, 0, true) }
         };
         nn.AddLayer(16);
         nn.AddLayer(12);
@@ -49,7 +49,7 @@ public class NeuralNetwork : ICloneable
 
     void AddLayer(int numNeurons, ActivationFunction? function = null)
     {
-        Layers.Add(new Layer(numNeurons, Layers[^1].Biases.Length, function));
+        Layers.Add(new Layer(numNeurons, Layers[^1].Biases.Length));
     }
 
     void RandomMemory(int i)
@@ -62,7 +62,7 @@ public class NeuralNetwork : ICloneable
     }
 
     [BurstCompile]
-    public NeuralNetwork Mutate(float mutation = 0.01f)
+    public void Mutate(float mutation = 0.01f)
     {
         var totalWeight = mutations.Values.Sum();
         var random = Utility.Random.NextFloat(totalWeight);
@@ -94,8 +94,6 @@ public class NeuralNetwork : ICloneable
                 Layers[layer].Functions[item] = Layer.RandomFunction();
                 break;
         }
-
-        return this;
     }
 
     static (int layer, int item) GetRandomElementIndex(List<Layer> layers, MutationType which)

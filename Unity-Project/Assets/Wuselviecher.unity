@@ -3478,7 +3478,7 @@ MonoBehaviour:
   speedSlider: {fileID: 441781311}
   toggleSpeed: {fileID: 1919754835}
   targetCellCount: 120
-  cellSpawnSize: 5
+  cellSpawnSize: 6
   deathBelowSize: 0.2
   autoSaveMinutes: 1
 --- !u!114 &413936426
