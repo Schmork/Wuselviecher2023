@@ -40,4 +40,12 @@ public class WorldConfig : MonoBehaviour
         get { return deathBelowSize; }
         set { deathBelowSize = value; }
     }
+
+    [SerializeField] private int autoSaveMinutes;
+
+    public int AutoSaveMinutes
+    {
+        get { return autoSaveMinutes; }
+        set { autoSaveMinutes = value; }
+    }
 }

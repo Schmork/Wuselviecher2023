@@ -22,14 +22,14 @@ public class StatsCollector : MonoBehaviour
     public void AddToScore(Valhalla.Metric key, float value)
     {
         scores[key] += value;
-        Valhalla.AddHero(mc.Brain, key, scores[key]);
+        Valhalla.AddHero(mc.Brains, key, scores[key]);
     }
 
     public void UpdateScore(Valhalla.Metric key, float value)
     {
         if (value > scores[key])
         {
-            Valhalla.AddHero(mc.Brain, key, value);
+            Valhalla.AddHero(mc.Brains, key, value);
         }
         scores[key] = value;
     }

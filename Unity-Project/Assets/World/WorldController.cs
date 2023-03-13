@@ -75,15 +75,24 @@ public class WorldController : MonoBehaviour
         var mc = cell.GetComponent<MovementController>();
         var hero = Valhalla.GetRandomHero();
 
-        if (hero == null || Random.value < 1 / (20 + avgGen * avgGen))
-            mc.Brain = NeuralNetwork.NewRandom();
+        if (hero[0] == null || Random.value < 1 / (20 + avgGen * avgGen))
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                mc.Brains[i] = NeuralNetwork.NewRandom();
+            }
+        }
         else
         {
-            mc.Brain = hero.Mutate(WorldConfig.GaussStd);
-            if (mc.Brain.generation > Valhalla.OldestGen)
+            for (int i = 0; i < 4; i++)
             {
-                Valhalla.OldestGen = mc.Brain.generation;
-                Dashboard.UpdateCellMaxGen(Valhalla.OldestGen);
+                mc.Brains[i] = hero[i].Mutate(WorldConfig.GaussStd);
+
+                if (mc.Brains[i].generation > Valhalla.OldestGen)
+                {
+                    Valhalla.OldestGen = mc.Brains[i].generation;
+                    Dashboard.UpdateCellMaxGen(Valhalla.OldestGen);
+                }
             }
         }
         cell.SetActive(true);
@@ -91,7 +100,7 @@ public class WorldController : MonoBehaviour
         var mcs = FindObjectsOfType<MovementController>();
         if (mcs.Length > 0)
         {
-            avgGen = mcs.Average(c => c.Brain.generation);
+            avgGen = mcs.SelectMany(mc => mc.Brains).Average(brain => brain.generation);
             Dashboard.UpdateCellAvgGen(avgGen);
         }
     }

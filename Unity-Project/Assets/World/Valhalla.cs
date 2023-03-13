@@ -1,12 +1,20 @@
 using System.Collections.Generic;
-using System.Globalization;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 
+[System.Serializable]
+public class HeroData
+{
+    public float Score;
+    public NeuralNetwork[] Networks;
+}
+
 public class Valhalla : MonoBehaviour
 {
-    public static readonly string VHERO = "Valhalla Hero ";
-    public static readonly string VSCOR = "Valhalla Score ";
+    public static readonly string VHERO = "Hero ";
+    public static readonly string VSCORE = "Score";
+    public static readonly string VNETWORKS = "Networks";
 
     public enum Metric
     {
@@ -20,18 +28,23 @@ public class Valhalla : MonoBehaviour
         PeaceTime
     }
 
-    private static Dictionary<Metric, NeuralNetwork> heroes;
-    private static Dictionary<Metric, float> scores;
+    static Dictionary<Metric, NeuralNetwork[]> heroes;
+    static Dictionary<Metric, float> scores;
     public static int OldestGen = 0;
     public static float[] metricChanceForRandomHero = new float[System.Enum.GetValues(typeof(Metric)).Length];
 
     public delegate void OnHighscoreChangedHandler(Metric metric, float newScore);
     public static event OnHighscoreChangedHandler OnHighscoreChanged;
 
-    public void OnEnable()
+    static string dataPath;
+
+    void OnEnable()
     {
         InitDictionaries();
-        LoadHeroesFromPrefs();
+        dataPath = Application.persistentDataPath + "/Heroes/";
+        if (!Directory.Exists(dataPath))
+            Directory.CreateDirectory(dataPath);
+        LoadHeroesFromFiles();
     }
 
     void InitDictionaries()
@@ -41,40 +54,52 @@ public class Valhalla : MonoBehaviour
             metricChanceForRandomHero[i] = 1;
         }
 
-        heroes = new Dictionary<Metric, NeuralNetwork>();
+        heroes = new Dictionary<Metric, NeuralNetwork[]>();
         scores = new Dictionary<Metric, float>();
         foreach (Metric metric in System.Enum.GetValues(typeof(Metric)))
         {
-            heroes[metric] = null;
+            heroes[metric] = new NeuralNetwork[4];
             scores[metric] = 0;
         }
     }
 
-    public void LoadHeroesFromPrefs()
+    public void LoadHeroesFromFiles()
     {
         foreach (Metric metric in System.Enum.GetValues(typeof(Metric)))
         {
-            string networkJson = PlayerPrefs.GetString(VHERO + metric.ToString(), null);
-            if (networkJson == null) return;
-            heroes[metric] = JsonUtility.FromJson<NeuralNetwork>(networkJson);
-            var scoreStr = PlayerPrefs.GetString(VSCOR + metric.ToString(), null);
-            if (scoreStr == "") continue;
-            scores[metric] = float.Parse(scoreStr, CultureInfo.InvariantCulture);
+            string filePath = dataPath + VHERO + metric.ToString() + ".json";
+            if (!File.Exists(filePath)) continue;
+            string dataJson = File.ReadAllText(filePath);
+            var data = JsonUtility.FromJson<HeroData>(dataJson);
+            if (data == null) continue;
+            scores[metric] = data.Score;
+            heroes[metric] = data.Networks;
         }
     }
 
-    public static void AddHero(NeuralNetwork network, Metric metric, float score)
+    public static void AddHero(NeuralNetwork[] networks, Metric metric, float score)
     {
         if (score < scores[metric]) return;
 
-        heroes[metric] = network;
+        heroes[metric] = networks;
         scores[metric] = score;
 
         OnHighscoreChanged?.Invoke(metric, score);
+    }
 
-        PlayerPrefs.SetString(VHERO + metric.ToString(), JsonUtility.ToJson(network));
-        PlayerPrefs.SetString(VSCOR + metric.ToString(),
-            scores[metric].ToString(CultureInfo.InvariantCulture));
+    System.Collections.IEnumerator Start()
+    {
+        yield return new WaitForSecondsRealtime(WorldConfig.Instance.AutoSaveMinutes * 60);
+        while (true)
+        {
+            foreach (Metric metric in System.Enum.GetValues(typeof(Metric)))
+            {
+                HeroData data = new HeroData { Score = scores[metric], Networks = heroes[metric] };
+                string dataJson = JsonUtility.ToJson(data);
+                File.WriteAllText(dataPath + VHERO + metric.ToString() + ".json", dataJson);
+            }
+            yield return new WaitForSecondsRealtime(WorldConfig.Instance.AutoSaveMinutes * 60);
+        }
     }
 
     float lastDecay;
@@ -95,8 +120,9 @@ public class Valhalla : MonoBehaviour
         for (int i = 0; i < scores.Count; i++)
         {
             var metric = (Metric)i;
-            PlayerPrefs.SetString(VSCOR + metric.ToString(),
-                scores[metric].ToString(CultureInfo.InvariantCulture));
+            HeroData data = new HeroData { Score = scores[metric], Networks = heroes[metric] };
+            string dataJson = JsonUtility.ToJson(data);
+            File.WriteAllText(dataPath + VHERO + metric.ToString() + ".json", dataJson);
         }
     }
 
@@ -114,12 +140,13 @@ public class Valhalla : MonoBehaviour
         foreach (Metric metric in System.Enum.GetValues(typeof(Metric)))
         {
             OnHighscoreChanged?.Invoke(metric, 0);
-            PlayerPrefs.SetString(VHERO + metric.ToString(), JsonUtility.ToJson(NeuralNetwork.NewRandom()));
-            PlayerPrefs.SetInt(VSCOR + metric.ToString(), 0);
+            HeroData data = new HeroData { Score = scores[metric], Networks = null };
+            string dataJson = JsonUtility.ToJson(data);
+            File.WriteAllText(dataPath + VHERO + metric.ToString() + ".json", dataJson);
         }
     }
 
-    public static NeuralNetwork GetRandomHero()
+    public static NeuralNetwork[] GetRandomHero()
     {
         int i;
         var sum = 0f;
@@ -127,7 +154,6 @@ public class Valhalla : MonoBehaviour
         {
             sum += metricChanceForRandomHero[i];
         }
-
         var rand = Utility.Random.NextDouble() * sum;
 
         sum = 0;
@@ -136,6 +162,13 @@ public class Valhalla : MonoBehaviour
             sum += metricChanceForRandomHero[i];
             if (rand < sum) return heroes[(Metric)i];
         }
-        return NeuralNetwork.NewRandom();
+
+        return new NeuralNetwork[]
+        {
+            NeuralNetwork.NewRandom(),
+            NeuralNetwork.NewRandom(),
+            NeuralNetwork.NewRandom(),
+            NeuralNetwork.NewRandom()
+        };
     }
 }

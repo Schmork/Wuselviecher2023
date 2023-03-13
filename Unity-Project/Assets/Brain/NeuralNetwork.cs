@@ -38,7 +38,7 @@ public class NeuralNetwork : ICloneable
         };
         nn.AddLayer(32);
         nn.AddLayer(12);
-        nn.AddLayer(4);
+        nn.AddLayer(8);
 
         nn.Memory = new int2[numInputs - SensorController.numSensorValues - 4];
         for (int i = 0; i < nn.Memory.Length; i++)
